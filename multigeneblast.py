@@ -1706,7 +1706,7 @@ def process_identifiers(identifiers, opts, options):
 def parse_options(args, opts):
     #Run GUI if no arguments supplied
     if len(args) < 2:
-      args = "-h"
+      args = ["gabe_extra_arg_180831", "-h"]
     default_options(opts)
     #Read user-specified options which may override defaults
     if len(args) >= 2:
