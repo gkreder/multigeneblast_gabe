@@ -47,7 +47,7 @@ try:
 except:
   pass
 if MGBPATH == "":
-  print("Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder.")
+  print "Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder."
   sys.exit(1)
 #Find path to Application Data
 if sys.platform == ('win32'):
@@ -69,7 +69,7 @@ else:
         os.mkdir(os.environ['HOME'] + os.sep + "multigeneblast_data")
         APPDATA = os.environ['HOME'] + os.sep + "multigeneblast_data"
     except:
-      print("No permission to write to installation folder. Please change user or save somewhere else.")
+      print "No permission to write to installation folder. Please change user or save somewhere else."
       sys.exit()
 if sys.platform == ('darwin') or sys.platform == ('win32'):
   try:
@@ -103,16 +103,15 @@ from pysvg.style import *
 from pysvg.text import *
 from pysvg.builders import *
 from string import ascii_letters
-import urllib.request, urllib.error, urllib.parse
-from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
-import http.client
-from http.client import BadStatusLine,HTTPException
-import urllib.request, urllib.parse, urllib.error
+import urllib2
+from urllib2 import Request,urlopen,URLError,HTTPError
+import httplib
+from httplib import BadStatusLine,HTTPException
+import urllib
 import tarfile
-import pickle as pickle
-from tkinter import *
-from tkinter.messagebox import askyesno, showerror
+import cPickle as pickle
+from Tkinter import *
+from tkMessageBox import askyesno, showerror
 import shutil
 
 class Options(dict):
@@ -130,7 +129,7 @@ class Options(dict):
             raise AttributeError(attr)
 
     def __setattr__(self, attr, value):
-        if '_Options__initialized' not in self.__dict__:
+        if not self.__dict__.has_key('_Options__initialized'):
             return dict.__setattr__(self, attr, value)
         elif attr in self:
             dict.__setattr__(self, attr, value)
@@ -155,7 +154,7 @@ def get_sequence(fasta):
     content = [x.rstrip() for x in content]
     seq = "".join(content)
     if ">" not in header or ">" in seq:
-      print("FASTA file not properly formatted; should be single sequence starting with '>' and sequence name.", file=sys.stderr)
+      print >> sys.stderr, "FASTA file not properly formatted; should be single sequence starting with '>' and sequence name."
       sys.exit(1)
     return seq
 
@@ -163,7 +162,7 @@ def complement(seq):
   complement = {'a': 't', 'c': 'g', 'g': 'c', 't': 'a', 'n': 'n', 'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'N': 'N'}  
   complseq = []
   for base in seq:
-    if base in list(complement.keys()):
+    if base in complement.keys():
       complbase = complement[str(base)]
       complseq.append(complbase)
     else:
@@ -280,7 +279,7 @@ def parsegenes(genes):
         start = location.split("..")[0]
         start = start.replace("<","")
         if ".." not in location:
-            print("WARNING: CDS feature with faulty coordinates skipped:\n %s" % "     CDS             " + i)
+            print "WARNING: CDS feature with faulty coordinates skipped:\n %s" % "     CDS             " + i
             continue
         end = location.split("..")[1]
         end = end.replace(">","")
@@ -476,13 +475,13 @@ def extractprotfasta(genelist,genedict,dnaseq,rc_dnaseq,joinlist,joindict,access
   seqs = []
   for i in genelist:
     genename = i
-    if genename in locustagdict:
+    if locustagdict.has_key(genename):
       locustag = locustagdict[genename]
-    elif genename.partition(".")[0] in locustagdict:
+    elif locustagdict.has_key(genename.partition(".")[0]):
       locustag = locustagdict[genename.partition(".")[0]]
-    elif genename.partition(".")[0] in accessiondict and accessiondict[genename].partition(".")[0] in locustagdict:
+    elif accessiondict.has_key(genename.partition(".")[0]) and locustagdict.has_key(accessiondict[genename].partition(".")[0]):
       locustag = locustagdict[accessiondict[genename].partition(".")[0]]
-    elif genename in accessiondict and accessiondict[genename] in locustagdict:
+    elif accessiondict.has_key(genename) and locustagdict.has_key(accessiondict[genename]):
       locustag = locustagdict[accessiondict[genename]]
     else:
       locustag = "no_locus_tag"
@@ -536,12 +535,12 @@ def gbk2proteins(gbkfile):
   try:
     file = open(gbkfile,"r")
   except:
-    print("Error: no or invalid input file: " + gbkfile)
+    print "Error: no or invalid input file: " + gbkfile
     sys.exit(1)
   filetext = file.read()
   filetext = filetext.replace("\r","\n")
   if "     CDS             " not in filetext or "\nORIGIN" not in filetext:
-    print("Exit: GBK file not properly formatted, no sequence found", file=sys.stderr)
+    print >> sys.stderr, "Exit: GBK file not properly formatted, no sequence found"
     sys.exit(1)
   cdspart = filetext.split("\nORIGIN")[0]
   #Extract DNA sequence and calculate reverse complement of it
@@ -608,7 +607,7 @@ def embl2proteins(emblfile):
   try:
     file = open(emblfile,"r")
   except:
-    print("Error: no or invalid input file: " + emblfile)
+    print "Error: no or invalid input file: " + emblfile
     sys.exit(1)
   filetext = file.read()
   filetext = filetext.replace("\r","\n")
@@ -714,7 +713,7 @@ def translate(sequence):
     if aanr == 1:
       protseq = protseq + "M"
     else:
-      if "n" in i or "N" in i or i not in list(transldict.keys()):
+      if "n" in i or "N" in i or i not in transldict.keys():
         protseq = protseq + "X"
       else:
         protseq = protseq + transldict[i]
@@ -736,11 +735,11 @@ def writefasta(names,seqs,file):
       e += 1
     out_file.close()
   except(IOError,OSError,NotImplementedError):
-    print("FASTA file not created.", file=sys.stderr)
+    print >> sys.stderr, "FASTA file not created."
 
 def testaccession(accession):
   #Test if accession number is probably real GenBank/RefSeq acc nr
-  numbers = list(range(0,10))
+  numbers = range(0,10)
   letters = []
   for i in ascii_letters:
     letters.append(i)
@@ -761,23 +760,23 @@ def testaccession(accession):
   return test
 
 def sortdictkeysbyvalues(dict):
-    items = [(value, key) for key, value in list(dict.items())]
+    items = [(value, key) for key, value in dict.items()]
     items.sort()
     return [key for value, key in items]
 
 def sortdictvaluesbykeys(dict):
-    items = [(key, value) for key, value in list(dict.items())]
+    items = [(key, value) for key, value in dict.items()]
     items.sort()
     return [value for key, value in items]
 
 def sortdictkeysbyvaluesrev(dict):
-    items = [(value, key) for key, value in list(dict.items())]
+    items = [(value, key) for key, value in dict.items()]
     items.sort()
     items.reverse()
     return [key for value, key in items]
     
 def sortdictkeysbyvaluesrevv(dict):
-    items = [(value, key) for key, value in list(dict.items())]
+    items = [(value, key) for key, value in dict.items()]
     items.sort()
     items.reverse()
     return [value for value, key in items]
@@ -811,12 +810,12 @@ def blastparse(blasttext, minseqcoverage, minpercidentity, seqlengths, seqdict, 
     alignmentlength = float(tabs[3])
     evalue = str(tabs[10])
     blastscore = int(tabs[11].split(".")[0])
-    if query in seqlengths:
+    if seqlengths.has_key(query):
       perc_coverage = (float(tabs[3]) / seqlengths[query]) * 100
     else:
       perc_coverage = 0
-      print(seqlengths)
-      print("Error: no sequence length found for", query)
+      print seqlengths
+      print "Error: no sequence length found for", query
       sys.exit()
     if perc_ident > minpercidentity and (perc_coverage > minseqcoverage or alignmentlength > 40):
       blastlines2.append(i)
@@ -842,7 +841,7 @@ def blastparse(blasttext, minseqcoverage, minpercidentity, seqlengths, seqdict, 
     hit_end = str(tabs[9])
     evalue = str(tabs[10])
     blastscore = int(tabs[11].split(".")[0])
-    if query in seqlengths:
+    if seqlengths.has_key(query):
       perc_coverage = (float(tabs[3]) / seqlengths[query]) * 100
     else:
       seqlength = len(seqdict[query.split("|")[4]])
@@ -1045,7 +1044,7 @@ def startendsitescheck(starts,ends):
 def calculate_colorgroups(queryclusternumber,hitclusternumbers,queryclusterdata,internalhomologygroupsdict):
   #Extract data and generate color scheme
   hitclusterdata = queryclusterdata[queryclusternumber][1]
-  queryclustergenes = hitclusterdata[list(hitclusterdata.keys())[0]][3]
+  queryclustergenes = hitclusterdata[hitclusterdata.keys()[0]][3]
   colorgroupsdict = {}
   colorgroupslengthlist = []
   colorgroupslist = []
@@ -1077,11 +1076,11 @@ def calculate_colorgroups(queryclusternumber,hitclusternumbers,queryclusterdata,
     for j in metacolorgroups:
       if i in j:
         for l in j:
-          if l in colorschemedict:
+          if colorschemedict.has_key(l):
             pass
           else:
             colorschemedict[l] = z
-    if z in list(colorschemedict.values()):
+    if z in colorschemedict.values():
       z += 1
   return colorschemedict,rgbcolorscheme
 
@@ -1096,8 +1095,8 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
     s.set_viewBox(viewbox)
     s.set_preserveAspectRatio("none")
     return [s,[{},{},{}]]
-  queryclustergenes = hitclusterdata[list(hitclusterdata.keys())[0]][3]
-  queryclustergenesdetails = hitclusterdata[list(hitclusterdata.keys())[0]][4]
+  queryclustergenes = hitclusterdata[hitclusterdata.keys()[0]][3]
+  queryclustergenesdetails = hitclusterdata[hitclusterdata.keys()[0]][4]
   colorgroupsdict = {}
   colorgroupslengthlist = []
   colorgroupslist = []
@@ -1136,7 +1135,7 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
       qstarts.append(qgenedata[1])
       qends.append(qgenedata[0])
     qstrands.append(qgenedata[2])
-    if i in colorschemedict:
+    if colorschemedict.has_key(i):
       qcolors.append(colorschemedict[i])
     else:
       qcolors.append("white")
@@ -1161,7 +1160,7 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
         hstarts.append(hgenedata[1])
         hends.append(hgenedata[0])
       hstrands.append(hgenedata[2])
-      if i in colorschemedict:
+      if colorschemedict.has_key(i):
         hcolors.append(colorschemedict[i])
       else:
         hcolors.append("white")
@@ -1214,7 +1213,7 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
             nextstart = sortstarts[w]
           except:
             break
-      if int(n) not in colorsdict or colorsdict[int(n)] == "white":
+      if not colorsdict.has_key(int(n)) or colorsdict[int(n)] == "white":
         colorsdict[int(n)] = color
       y += 1
     hstarts = [int(l) for l in hstarts]
@@ -1421,9 +1420,9 @@ def log(message, exit=False, retcode=1, stdout=False):
     else:
       "Log to stderr and logfile and optionally exit"
       if stdout:
-        print(message)
+        print message
       else:
-        print(message, file=sys.stderr)
+        print >> sys.stderr, message
       logfile = open('multigeneblast.log', 'a', 1)
       logfile.write(message + '\n')
       logfile.close()
@@ -1480,7 +1479,7 @@ def default_options(opts):
     opts.syntenyweight = 0.5
 
 def invalidoptions(argument):
-    print("From the command line, input multigeneblast -help for more information.")
+    print "From the command line, input multigeneblast -help for more information."
     if len(argument) > 0:
         log("Invalid options input: %s" % argument, exit=True)
 
@@ -1519,14 +1518,14 @@ def process_identifiers(identifiers, opts, options):
     global CURRENTDIR
     for i in identifiers:
         if i == "-help" or i == "--help" or i == "-h":
-          print(inputinstructions())
+          print inputinstructions()
           sys.exit(1)
         else:
           value = options[options.index(i) + 1].strip()
           if i == "-from":
               fromto_tag_used = "y"
               if genes_tag_used == "y":
-                print("Please either the -from and -to tags, or the -genes tag to select genes.")
+                print "Please either the -from and -to tags, or the -genes tag to select genes."
                 invalidoptions(i)
               if value.isdigit():
                   opts.startpos = int(value)
@@ -1536,7 +1535,7 @@ def process_identifiers(identifiers, opts, options):
           elif i == "-to":
               fromto_tag_used = "y"
               if genes_tag_used == "y":
-                print("Please either the -from and -to tags, or the -genes tag to select genes.")
+                print "Please either the -from and -to tags, or the -genes tag to select genes."
                 invalidoptions(i)
               if value.isdigit():
                   opts.endpos = int(value)
@@ -1546,7 +1545,7 @@ def process_identifiers(identifiers, opts, options):
           elif i == "-genes":
               genes_tag_used = "y"
               if fromto_tag_used == "y":
-                print("Please either the -from and -to tags, or the -genes tag to select genes.")
+                print "Please either the -from and -to tags, or the -genes tag to select genes."
                 invalidoptions(i)
               if "," in value:
                   opts.ingenes = [gene for gene in value.split(",") if gene != ""]
@@ -1560,7 +1559,7 @@ def process_identifiers(identifiers, opts, options):
                 value = CURRENTDIR + os.sep + value
               root, ext = os.path.splitext(value)
               if ext.lower() not in [".gbk",".gb",".genbank",".embl",".emb",".fasta",".fas",".fa",".fna"]:
-                  print("Please supply input file with valid GBK / EMBL extension (homology search) or FASTA extension (architecture search).")
+                  print "Please supply input file with valid GBK / EMBL extension (homology search) or FASTA extension (architecture search)."
                   invalidoptions(i)
               if value in os.listdir(".") or (os.sep in value and os.path.exists(value.rpartition(os.sep)[0]) and value.rpartition(os.sep)[2] in os.listdir(value.rpartition(os.sep)[0])):
                   opts.infile = value
@@ -1568,11 +1567,11 @@ def process_identifiers(identifiers, opts, options):
                   if ext.lower() in [".fasta",".fas",".fa",".fna"]:
                     fastafile = "y"
               else:
-                  print("Specified input file not found...")
+                  print "Specified input file not found..."
                   invalidoptions(i)
           elif i == "-out":
               if not value.replace("_","").replace("_","").replace("..","").replace(os.sep,"").isalnum():
-                  print("Not a valid output folder name. Please use alpha-numerical characters only")
+                  print "Not a valid output folder name. Please use alpha-numerical characters only"
                   invalidoptions(i)
               if sys.platform == ('win32') and value.count(os.sep) == 1 and value[0] == os.sep:
                 invalidoptions(i)
@@ -1603,7 +1602,7 @@ def process_identifiers(identifiers, opts, options):
               else:
                 invalidoptions(i)
               if os.path.exists(opts.outputfolder):
-                  print("Warning: Overwriting existing folder")
+                  print "Warning: Overwriting existing folder"
                   for xhtmlfile in [filename for filename in os.listdir(opts.outputfolder) if "xhtml" in filename]:
                     os.remove(opts.outputfolder + os.sep + xhtmlfile)
                   outfolder = "y"
@@ -1625,7 +1624,7 @@ def process_identifiers(identifiers, opts, options):
                 if not value + ".phr" in os.listdir(MGBPATH) and not value + ".phr" in os.listdir(".") and not (os.sep in value and os.path.exists(value.rpartition(os.sep)[0]) and value.rpartition(os.sep)[2] + ".phr" in os.listdir(value.rpartition(os.sep)[0])):
                   if not value + ".nal" in os.listdir(MGBPATH) and not value + ".nal" in os.listdir(".") and not value + ".nal" in os.listdir(CURRENTDIR) and not (os.sep in value and os.path.exists(value.rpartition(os.sep)[0]) and value.rpartition(os.sep)[2] + ".nal" in os.listdir(value.rpartition(os.sep)[0])):
                     if not value + ".nhr" in os.listdir(MGBPATH) and not value + ".nhr" in os.listdir(".") and not (os.sep in value and os.path.exists(value.rpartition(os.sep)[0]) and value.rpartition(os.sep)[2] + ".nhr" in os.listdir(value.rpartition(os.sep)[0])):
-                      print("Error: Database not found; database should have accompanying .phr, .psq and .pin files.")
+                      print "Error: Database not found; database should have accompanying .phr, .psq and .pin files."
                       invalidoptions(i)
               opts.db = value
               if value + ".pal" in os.listdir(MGBPATH) or value + ".nal" in os.listdir(MGBPATH):
@@ -1641,7 +1640,7 @@ def process_identifiers(identifiers, opts, options):
                 DBPATH = value.rpartition(os.sep)[0]
                 opts.db = value.rpartition(os.sep)[2]
               else:
-                print("Error: Database not found; database should have accompanying .phr, .psq and .pin or .nhr, .nsq and .nin files.")
+                print "Error: Database not found; database should have accompanying .phr, .psq and .pin or .nhr, .nsq and .nin files."
                 invalidoptions(i)
               os.environ['BLASTDB'] = DBPATH
               if opts.db + ".pal" in os.listdir(DBPATH):
@@ -1667,19 +1666,19 @@ def process_identifiers(identifiers, opts, options):
               if value.isdigit() and int(value) in range(1,100):
                   opts.distancekb = int(value) * 1000
               else:
-                  print("Error: please select a number between 1-100.")
+                  print "Error: please select a number between 1-100."
                   invalidoptions(i)
           elif i == "-syntenyweight":
               if (value.isdigit() or (value.count(".") == 1 and value.partition(".")[0].isdigit() and value.partition(".")[2].isdigit())) and float(value) <= 2.0 and float(value) >= 0.0:
                   opts.syntenyweight = float(value)
               else:
-                  print("Error: please select a number between 0.0 and 2.0.")
+                  print "Error: please select a number between 0.0 and 2.0."
                   invalidoptions(i)
           elif i == "-hitspergene":
               if value.isdigit() and int(value) in range(50,10001):
                   opts.hitspergene = int(value)
               else:
-                  print("Error: please select a number between 50-10000.")
+                  print "Error: please select a number between 50-10000."
                   invalidoptions(i)
           elif i == "-muscle":
               if value == "y" or value == "n":
@@ -1690,17 +1689,17 @@ def process_identifiers(identifiers, opts, options):
               if value.isdigit() and int(value) in range(0,41):
                   opts.pages = int(value)
               else:
-                  print("Error: please select a number between 0-40.")
+                  print "Error: please select a number between 0-40."
                   invalidoptions(i)
           else:
               invalidoptions(i)
     #Stop process if options are provided with a FASTA file that do not belong with it
     if fastafile == "y" and (genes_tag_used == "y" or fromto_tag_used == "y"):
-      print("Error: -from, -to and -genes tags are incompatible with architecture search (FASTA input)")
+      print "Error: -from, -to and -genes tags are incompatible with architecture search (FASTA input)"
       sys.exit(1)
     #Stop process if inadequate options are supplied.
     if infile == "n" or ("n" in [startpos, endpos] and ingenes == "n" and ".fa" not in opts.infile.partition(".")[1] + opts.infile.partition(".")[2]) or outfolder == "n":
-        print("Input error. An input file, an outputfolder and a query region (for EMBL/GBK inputs) must be supplied.")
+        print "Input error. An input file, an outputfolder and a query region (for EMBL/GBK inputs) must be supplied."
         invalidoptions(" ".join(options))
 
 def parse_options(args, opts):
@@ -1880,7 +1879,7 @@ def internal_blast(minseqcoverage, minpercidentity, names, proteins, seqdict, nr
   groups = []
   for j in names:
     frame_update()
-    if j in iblastdict:
+    if iblastdict.has_key(j):
       hits = iblastdict[j][0]
       group = []
       for k in hits:
@@ -1924,7 +1923,7 @@ def runblast(args, dbtype):
     blast_stdout = subprocess.Popen(blastsearch, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=new_env)
     blast_stdout = blast_stdout.stdout.read()
     if z > 2:
-      print("Error running Blast, exiting. Please check your system.")
+      print "Error running Blast, exiting. Please check your system."
       sys.exit(1)
     z += 1
 
@@ -1972,7 +1971,7 @@ def parse_blast(blastoutput, minseqcoverage, minpercidentity, seqlengths, seqdic
   log("Blast search finished. Parsing results...")
   blastinfo = blastparse(blastoutput, minseqcoverage, minpercidentity, seqlengths, seqdict, dbname, dbtype)
   blastdict = blastinfo[0]
-  if len(list(blastdict.keys())) == 0:
+  if len(blastdict.keys()) == 0:
     log("No BLAST hits found above significance tresholds. Exiting MultiGeneBlast...", exit=True)
   querylist = blastinfo[1]
   return blastdict, querylist
@@ -2021,7 +2020,7 @@ def load_dbproteins_info(querylist, blastdict, dbname):
   temp_proteininfo = {}
   proteininfo = {}
   for i in querylist:
-    if i in blastdict:
+    if blastdict.has_key(i):
       subjects = blastdict[i][0]
       for j in subjects:
         if j not in allhitprots:
@@ -2041,7 +2040,7 @@ def load_dbproteins_info(querylist, blastdict, dbname):
       except:
         log(j[:4].upper() + ".pickle" + " missing in proteininfo tar")
         continue        ##########THIS NEEDS TO BE FIXED IN THE DB TO PREVENT THIS ERROR / MAKE THIS UNNECESSARY
-    if j not in proteininfodict:
+    if not proteininfodict.has_key(j):
       log(j + " missing in proteininfodict")
       continue        ##########THIS NEEDS TO BE FIXED IN THE DB TO PREVENT THIS ERROR / MAKE THIS UNNECESSARY
     pinfo = str(proteininfodict[j])
@@ -2078,7 +2077,7 @@ def load_dbproteins_info(querylist, blastdict, dbname):
       allgenomes.append(genome)
       temp_proteininfo[genome] = [j, ProteinInfo(genome,pstart,pend,strand,annotation,locustag)]
     else:
-      if genome in temp_proteininfo:
+      if temp_proteininfo.has_key(genome):
         old_entry = temp_proteininfo[genome]
         proteininfo[old_entry[0]] = old_entry[1]
         nucdict[old_entry[0]]  = old_entry[1].genome
@@ -2103,7 +2102,7 @@ def load_ndb_info(querylist, blastdict, dbname):
   nucdict = {}
   proteininfo = {}
   for i in querylist:
-    if i in blastdict:
+    if blastdict.has_key(i):
       subjects = blastdict[i][0]
       for j in subjects:
         if j not in allhitprots:
@@ -2141,9 +2140,9 @@ def load_other_genes(allgenomes, proteininfo, dbname, blastdict):
       infofile = genecords_archive.extractfile("genecords/" + i[:5].upper() + ".pickle")
       genecordsdict = pickle.load(infofile)
     genecords = genecordsdict[i]
-    genomeprotpositions = [proteininfo[prot].pstart for prot in list(proteininfo.keys()) if i == proteininfo[prot].genome]
-    genomeprotpositions.extend([proteininfo[prot].pend for prot in list(proteininfo.keys()) if i == proteininfo[prot].genome])
-    blastsubjects = [item for sublist in [blastdict[key][0] for key in list(blastdict.keys())] for item in sublist]
+    genomeprotpositions = [proteininfo[prot].pstart for prot in proteininfo.keys() if i == proteininfo[prot].genome]
+    genomeprotpositions.extend([proteininfo[prot].pend for prot in proteininfo.keys() if i == proteininfo[prot].genome])
+    blastsubjects = [item for sublist in [blastdict[key][0] for key in blastdict.keys()] for item in sublist]
     for j in genecords:
       if j.count(j.split("|")[0]) > 1:
         j = j.rpartition(j.split("|")[1]) + j.rpartition(j.split("|")[2])
@@ -2175,7 +2174,7 @@ def load_other_genes(allgenomes, proteininfo, dbname, blastdict):
           else:
             same = "y"
           continue
-        if protein not in proteininfo:
+        if not proteininfo.has_key(protein):
           proteininfo[protein] = ProteinInfo(genome,pstart,pend,strand,annotation,locustag)
         correct = "n"
         z = 0
@@ -2220,7 +2219,7 @@ def find_hits_positions(blastdict, proteininfo, querylist):
   frame_update()
   blastdict2 = {}
   for i in querylist:
-    if i in blastdict:
+    if blastdict.has_key(i):
       subjects = blastdict[i][0]
       subjects2 = []
       querydict = blastdict[i][1]
@@ -2231,7 +2230,7 @@ def find_hits_positions(blastdict, proteininfo, querylist):
         #blastparse = [perc_ident,blastscore,perc_coverage,evalue]
         #goal = [subject_genecluster,subject_start,subject_end,subject_strand,subject_annotation,perc_ident,blastscore,perc_coverage,evalue,locustag]
         #goal now = [subject_start,subject_end,subject_strand,subject_annotation,perc_ident,blastscore,perc_coverage,evalue,locustag]
-        if j in proteininfo:
+        if proteininfo.has_key(j):
           oldblastdictinfo = querydict[j]
           if proteininfo[j].strand == 1:
             strand = "+"
@@ -2241,7 +2240,7 @@ def find_hits_positions(blastdict, proteininfo, querylist):
           querydict2[j] = newblastdictinfo
           subjects2.append(j)
         else:
-          print("WARNING:", j, "accession number not taken into account; data entry invalid.")
+          print "WARNING:", j, "accession number not taken into account; data entry invalid."
       blastdict2[i] = [subjects2,querydict2]
   blastdict = blastdict2
   return blastdict
@@ -2251,7 +2250,7 @@ def sort_genes_per_nucleotide(querylist, blastdict, nucdict):
   frame_update()
   universalquerydict = {}
   for i in querylist:
-    if i in blastdict:
+    if blastdict.has_key(i):
       querydict = blastdict[i][1]
       universalquerydict.update(querydict)
   #Make dictionary that sorts all hit genes per nucleotide scaffold
@@ -2259,11 +2258,11 @@ def sort_genes_per_nucleotide(querylist, blastdict, nucdict):
   source2dict = {}
   multiplelist = []
   multiplehitlist = []
-  nucdictkeys = list(nucdict.keys())
+  nucdictkeys = nucdict.keys()
   nucdictkeys.sort()
-  for j in list(nucdict.keys()):
+  for j in nucdict.keys():
     nucsource = nucdict[j]
-    if nucsource in source2dict:
+    if source2dict.has_key(nucsource):
       if nucsource not in multiplelist:
         multiplehitlist.append(source2dict[nucsource][0])
         multiplelist.append(nucsource)
@@ -2289,11 +2288,11 @@ def find_geneclusters(sourcedict, universalquerydict, allowedgenedistance, nucde
     extraspace = int(int(dnaseqlength) / 2)
   if extraspace > int(allowedgenedistance):
     extraspace = int(allowedgenedistance)
-  nuccodes = list(dict.fromkeys(list(sourcedict.keys())).keys())
+  nuccodes = dict.fromkeys(sourcedict.keys()).keys()
   for i in nuccodes:
     frame_update()
     extragenes = []
-    for j in list(proteininfo.keys()):
+    for j in proteininfo.keys():
       if i == proteininfo[j].genome:
         extragenes.append(j)
     scaffoldgenes = sourcedict[i]
@@ -2366,7 +2365,7 @@ def find_geneclusters(sourcedict, universalquerydict, allowedgenedistance, nucde
             clustergenes.append(j)
             clustergenesdict[j] = int(proteininfo[j].pstart)
       nucdescription = ""
-      for i in list(nucdescriptions.keys()):
+      for i in nucdescriptions.keys():
         if i in nuc_acc.split(".")[0]:
           nucdescription = nucdescriptions[i]
           break
@@ -2379,7 +2378,7 @@ def update_blastdict(blastdict, querylist, clusterdict, multiplehitlist):
   blastdict2 = {}
   frame_update()
   for i in querylist:
-    if i in blastdict:
+    if blastdict.has_key(i):
       subjects = blastdict[i][0]
       querydict = blastdict[i][1]
       querydict2 = {}
@@ -2426,7 +2425,7 @@ def score_blast(hitclusters, querylist, blastdict, clusters, multiplehitlist, ar
       querynrhits = 0
       querycumblastscore = float(0)
       nrhitsplus = "n"
-      if j in blastdict:
+      if blastdict.has_key(j):
         for k in blastdict[j][0]:
           if k in multiplehitlist and i == blastdict[j][1][k][0]:
             if [querylist.index(j),clusters[i][0].index(blastdict[j][1][k][11])] not in hitpositions:
@@ -2447,7 +2446,7 @@ def score_blast(hitclusters, querylist, blastdict, clusters, multiplehitlist, ar
     #Find groups of hits
     hitgroupsdict = {}
     for p in hitpositions:
-      if p[0] not in hitgroupsdict:
+      if not hitgroupsdict.has_key(p[0]):
         hitgroupsdict[p[0]] = [p[1]]
       else:
         hitgroupsdict[p[0]].append(p[1])
@@ -2462,7 +2461,7 @@ def score_blast(hitclusters, querylist, blastdict, clusters, multiplehitlist, ar
           if p[1] in hitgroupsdict[hitpositions[z][0]]:
             tandem = "y"
           #Score entry
-          if ((p[0] not in query_givenscores_querydict) or query_givenscores_querydict[p[0]] == 0) and ((p[1] not in query_givenscores_hitdict) or query_givenscores_hitdict[p[1]] == 0) and tandem == "n":
+          if ((not query_givenscores_querydict.has_key(p[0])) or query_givenscores_querydict[p[0]] == 0) and ((not query_givenscores_hitdict.has_key(p[1])) or query_givenscores_hitdict[p[1]] == 0) and tandem == "n":
             q = hitpositions[z]
             if (abs(p[0] - q[0]) < 2) and abs(p[0]-q[0]) == abs(p[1]-q[1]):
               synteny_score += 1
@@ -2591,7 +2590,7 @@ def write_txt_output(rankedclusters, rankedclustervalues, hitclusterdata, protei
         nucleotidename = nucleotidename + j + "_"
       nucleotidename = nucleotidename[:-1].split(".")[0]
       nucdescription = ""
-      for j in list(nucdescriptions.keys()):
+      for j in nucdescriptions.keys():
         if j in nucleotidename:
           nucdescription = nucdescriptions[j]
           break
@@ -2627,7 +2626,7 @@ def write_txt_output(rankedclusters, rankedclustervalues, hitclusterdata, protei
       out_file.write("\n")
       out_file.write("Table of Blast hits (query gene, subject gene, %identity, blast score, %coverage, e-value):")
       out_file.write("\n")
-      if i in list(hitclusterdata.keys()):
+      if i in hitclusterdata.keys():
         tabledata = hitclusterdata[i]
         for x in tabledata:
           w = 0
@@ -2689,9 +2688,9 @@ def read_multigeneblast_data(page):
     queryclustergenesdetails[tabs[0]] = [tabs[1],tabs[2],tabs[3],tabs[4], tabs[5]]
   #Sort query cluster genes by start position
   starts = [max([int(queryclustergenesdetails[gene][0]), int(queryclustergenesdetails[gene][1])]) for gene in queryclustergenes]
-  genesAndStarts = list(zip(starts, queryclustergenes))
+  genesAndStarts = zip(starts, queryclustergenes)
   genesAndStarts.sort()
-  starts, queryclustergenes = list(zip(*genesAndStarts))
+  starts, queryclustergenes = zip(*genesAndStarts)
   return queryclusterdata, nrhitgeneclusters, nrhitclusters, cb_accessiondict, queryclustergenes, queryclustergenesdetails, tophitclusters, details
 
 def process_multigeneblast_data(nrhitgeneclusters, nrhitclusters, cb_accessiondict, queryclustergenes, queryclustergenesdetails, internalhomologygroupsdict, tophitclusters, details, page):
@@ -2719,9 +2718,9 @@ def process_multigeneblast_data(nrhitgeneclusters, nrhitclusters, cb_accessiondi
       blastdetailslines = [line for line in (i.split("%coverage, e-value):\n")[1]).split("\n") if line != ""]
       for line in blastdetailslines:
         tabs = line.split("\t")
-        if accession not in blastdetails:
+        if not blastdetails.has_key(accession):
           blastdetails[accession] = {}
-        if tabs[1] not in blastdetails[accession]:
+        if not blastdetails[accession].has_key(tabs[1]):
           blastdetails[accession][tabs[1]] = [[tabs[0], tabs[2], tabs[3], tabs[4], tabs[5]]]
         else:
           blastdetails[accession][tabs[1]].append([tabs[0], tabs[2], tabs[3], tabs[4], tabs[5]])
@@ -2756,11 +2755,11 @@ def process_multigeneblast_data(nrhitgeneclusters, nrhitclusters, cb_accessiondi
         hitgenes = []
         for i in blasthitslines:
           tabs = i.split("\t")
-          if tabs[0] in blasthitdict:
+          if blasthitdict.has_key(tabs[0]):
             hits = blasthitdict[tabs[0]]
             hits.append(tabs[1])
             blasthitdict[tabs[0]] = hits
-            if tabs[1] in revblasthitdict:
+            if revblasthitdict.has_key(tabs[1]):
               revhits = revblasthitdict[tabs[1]]
               revhits.append(tabs[0])
               revblasthitdict[tabs[1]] = revhits
@@ -2772,7 +2771,7 @@ def process_multigeneblast_data(nrhitgeneclusters, nrhitclusters, cb_accessiondi
             hitgenes.append(tabs[1])
           else:
             blasthitdict[tabs[0]] = [tabs[1]]
-            if tabs[1] in revblasthitdict:
+            if revblasthitdict.has_key(tabs[1]):
               revhits = revblasthitdict[tabs[1]]
               revhits.append(tabs[0])
               revblasthitdict[tabs[1]] = revhits
@@ -2792,10 +2791,10 @@ def process_multigeneblast_data(nrhitgeneclusters, nrhitclusters, cb_accessiondi
             additionalhits = []
             #For each hit, check if it was also hit by another gene; if so, only add it to the group if this hit had the lowest blast score
             queryscore = 0
-            if j in blasthitdict:
+            if blasthitdict.has_key(j):
               for k in blasthitdict[j]:
                 otherscores = []
-                for l in list(blastdetailsdict.keys()):
+                for l in blastdetailsdict.keys():
                   if j == l.partition("_|_")[0] and k == l.rpartition("_|_")[2]:
                     queryscore = blastdetailsdict[l][1]
                   if k in l and j not in l:
@@ -2868,18 +2867,18 @@ def align_muscle(include_muscle, colorschemedict, seqdict):
       os.mkdir("fasta")
     except(IOError,OSError):
       pass
-    orthogroupsdup = list(colorschemedict.values())
-    orthogroups = list(dict.fromkeys(orthogroupsdup).keys())
+    orthogroupsdup = colorschemedict.values()
+    orthogroups = dict.fromkeys(orthogroupsdup).keys()
     for k in orthogroups:
       frame_update()
       accessions = []
-      for l in list(colorschemedict.keys()):
+      for l in colorschemedict.keys():
         if colorschemedict[l] == k:
           accessions.append(l)
       seqdict2 = {}
-      for key in list(seqdict.keys()):
+      for key in seqdict.keys():
         seqdict2[key.split("|")[-1]] = seqdict[key]
-      queryseqs = [">" + acc + "\n" + seqdict2[acc] + "\n" for acc in accessions if acc in seqdict2]
+      queryseqs = [">" + acc + "\n" + seqdict2[acc] + "\n" for acc in accessions if seqdict2.has_key(acc)]
       accessions = [acc for acc in accessions if testaccession(acc) == "y"]
       if len(queryseqs) + len(accessions) < 2:
         continue
@@ -2890,15 +2889,15 @@ def align_muscle(include_muscle, colorschemedict, seqdict):
       while urltry == "n":
         try:
           time.sleep(3)
-          req = urllib.request.Request(url)
-          response = urllib.request.urlopen(req)
+          req = urllib2.Request(url)
+          response = urllib2.urlopen(req)
           output = response.read()
           if len(output) > 5:
             urltry = "y"
           if ">" not in output:
             log("Downloading of FASTA sequences failed")
             break
-        except (IOError,http.client.BadStatusLine,URLError,http.client.HTTPException):
+        except (IOError,httplib.BadStatusLine,URLError,httplib.HTTPException):
           tries += 1
           if tries == 5:
             break
@@ -2967,8 +2966,8 @@ def write_xhtml_output(htmloutfile, queryclusterdata, clusters, clusterblastposi
   for i in range(nrhitclusters):
     frame_update()
     hitclusterdata = queryclusterdata[1][1]
-    queryclustergenes = hitclusterdata[list(hitclusterdata.keys())[0]][3]
-    queryclustergenesdetails = hitclusterdata[list(hitclusterdata.keys())[0]][4]
+    queryclustergenes = hitclusterdata[hitclusterdata.keys()[0]][3]
+    queryclustergenesdetails = hitclusterdata[hitclusterdata.keys()[0]][4]
     hitclusternumber =  i + 1 + (page - 1) * 50
     cluster_acc = hitclusterdata[hitclusternumber][6]
     cluster_blastdetails = blastdetails[cluster_acc]
@@ -3042,14 +3041,14 @@ def write_xhtml_output(htmloutfile, queryclusterdata, clusters, clusterblastposi
         elif j != hitclustergenesdetails[j][4] and testaccession(j) == "y":
           htmloutfile.write('<br/>Accession: <a href="http://www.ncbi.nlm.nih.gov/protein/' + j + '" target="_blank">' + j + "</a>\n")
         htmloutfile.write("<br/>Location: " + str(hitclustergenesdetails[j][0]) + "-" + str(hitclustergenesdetails[j][1]) + "\n")
-        if j in cluster_blastdetails:
+        if cluster_blastdetails.has_key(j):
           for blasthit in cluster_blastdetails[j]:
             htmloutfile.write("<br/><br/><b>BlastP hit with " + blasthit[0] + "</b>\n<br/>Percentage identity: " + blasthit[1] + " %\n")
             htmloutfile.write("<br/>BlastP bit score: " + blasthit[2] + "\n<br/>Sequence coverage: " + blasthit[3].partition(".")[0] + " %\n")
             htmloutfile.write("<br/>E-value: " + blasthit[4] + "\n<br/>")
         if testaccession(j) == "y" and dbtype != "nucl":
           htmloutfile.write("<br/><a href=\"" + link + "\" target=\"_blank\"> NCBI BlastP on this gene </a>\n")
-        if j in colorschemedict and colorschemedict[j] in musclegroups:
+        if colorschemedict.has_key(j) and colorschemedict[j] in musclegroups:
           htmloutfile.write("<br/><a href=\"fasta" + os.sep + "orthogroup" + str(colorschemedict[j]) + "_muscle.fasta\" target=\"_blank\"> Muscle alignment of this gene with homologs </a>\n")
         htmloutfile.write("</div>\n\n")
         htmloutfile.write('<div id="h' + str(qclusternr) + "_" + str(hitclusternumber) + "_" + str(a) + '_divtext" class="hidden genenames" style="position:absolute; top:' + str(126) + 'px; left:' + str(int(float((float(hrel_starts[a])+float(hrel_ends[a]))/2)*0.9375)) + 'px;">\n')
@@ -3079,8 +3078,8 @@ def write_xhtml_output(htmloutfile, queryclusterdata, clusters, clusterblastposi
     for i in range(nrhitclusters):
       frame_update()
       hitclusterdata = queryclusterdata[1][1]
-      queryclustergenes = hitclusterdata[list(hitclusterdata.keys())[0]][3]
-      queryclustergenesdetails = hitclusterdata[list(hitclusterdata.keys())[0]][4]
+      queryclustergenes = hitclusterdata[hitclusterdata.keys()[0]][3]
+      queryclustergenesdetails = hitclusterdata[hitclusterdata.keys()[0]][4]
       hitclusternumber =  i + 1 + (page - 1) * 50
       hrel_starts = relpositiondata[1][hitclusternumber][0]
       hrel_ends = relpositiondata[1][hitclusternumber][1]
@@ -3114,7 +3113,7 @@ def write_xhtml_output(htmloutfile, queryclusterdata, clusters, clusterblastposi
           htmloutfile.write("<br/>Location: " + str(queryclustergenesdetails[j][0]) + "-" + str(queryclustergenesdetails[j][1]) + "\n")
           if testaccession(j) == "y":
             htmloutfile.write("<br/><a href=\"" + link + "\" target=\"_blank\"> NCBI BlastP on this gene </a>\n")
-          if j in colorschemedict and colorschemedict[j] in musclegroups:
+          if colorschemedict.has_key(j) and colorschemedict[j] in musclegroups:
             htmloutfile.write("<br/><a href=\"fasta" + os.sep + "orthogroup" + str(colorschemedict[j]) + "_muscle.fasta\" target=\"_blank\"> Muscle alignment of this gene with homologs </a>\n")
           htmloutfile.write("</div>\n\n")
           htmloutfile.write('<div id="all_' + str(qclusternr) + "_0_" + str(a) + '_divtext" class="hidden genenames" style="position:absolute; top:' + str(75) + 'px; left:' + str(int(float((float(qrel_starts[a])+float(qrel_ends[a]))/2)*0.9375)) + 'px;">\n')
@@ -3135,14 +3134,14 @@ def write_xhtml_output(htmloutfile, queryclusterdata, clusters, clusterblastposi
           elif j != hitclustergenesdetails[j][4] and testaccession(j) == "y":
             htmloutfile.write('<br/>Accession: <a href="http://www.ncbi.nlm.nih.gov/protein/' + j + '" target="_blank">' + j + "</a>\n")
           htmloutfile.write("<br/>Location: " + str(hitclustergenesdetails[j][0]) + "-" + str(hitclustergenesdetails[j][1]) + "\n")
-          if j in cluster_blastdetails:
+          if cluster_blastdetails.has_key(j):
             for blasthit in cluster_blastdetails[j]:
               htmloutfile.write("<br/><br/><b>BlastP hit with " + blasthit[0] + "</b>\n<br/>Percentage identity: " + blasthit[1] + " %\n")
               htmloutfile.write("<br/>BlastP bit score: " + blasthit[2] + "\n<br/>Sequence coverage: " + blasthit[3].partition(".")[0] + " %\n")
               htmloutfile.write("<br/>E-value: " + blasthit[4] + "\n<br/>")
           if testaccession(j) == "y" and dbtype != "nucl":
             htmloutfile.write("<br/><a href=\"" + link + "\" target=\"_blank\"> NCBI BlastP on this gene </a>\n")
-          if j in colorschemedict and colorschemedict[j] in musclegroups:
+          if colorschemedict.has_key(j) and colorschemedict[j] in musclegroups:
             htmloutfile.write("<br/><a href=\"fasta" + os.sep + "orthogroup" + str(colorschemedict[j]) + "_muscle.fasta\" target=\"_blank\"> Muscle alignment of this gene with homologs </a>\n")
           htmloutfile.write("</div>\n\n")
           htmloutfile.write('<div id="all_' + str(qclusternr) + "_" + str(hitclusternumber) + "_" + str(a) + '_divtext" class="hidden genenames" style="position:absolute; top:' + str(int(75 + 51.7 * (hitclusternumber - (page - 1) * 50))) + 'px; left:' + str(int(float((float(hrel_starts[a])+float(hrel_ends[a]))/2)*0.9375)) + 'px;">\n')
@@ -3252,48 +3251,48 @@ def main():
   opts = Options()
   #Step 1: parse options
   parse_options(sys.argv, opts)
-  print("Step 1/11: Time since start: " + str((time.time() - starttime)))
+  print "Step 1/11: Time since start: " + str((time.time() - starttime))
   #Step 2: Read GBK / EMBL file, select genes from requested region and output FASTA file
   proteins, genomic_accnr, dnaseqlength, nucname, querytags, names, seqs, seqdict, arch_search = read_input_file(opts.infile, opts.startpos, opts.endpos, opts.ingenes, opts.gui)
-  print("Step 2/11: Time since start: " + str((time.time() - starttime)))
+  print "Step 2/11: Time since start: " + str((time.time() - starttime))
   #Step 3: Run internal BLAST
   internalhomologygroupsdict, seqlengths = internal_blast(opts.minseqcov, opts.minpercid, names, proteins, seqdict, opts.nrcpus)
-  print("Step 3/11: Time since start: " + str((time.time() - starttime)))
+  print "Step 3/11: Time since start: " + str((time.time() - starttime))
   #Step 4: Run BLAST on genbank_mf database
   blastoutput = db_blast(names, seqs, opts.db, opts.nrcpus, opts.hitspergene, opts.dbtype)
-  print("Step 4/11: Time since start: " + str((time.time() - starttime)))
+  print "Step 4/11: Time since start: " + str((time.time() - starttime))
   #Step 5: Parse BLAST output
   blastdict, querylist = parse_blast(blastoutput, opts.minseqcov, opts.minpercid, seqlengths, seqdict, opts.db, opts.dbtype)
-  print("Step 5/11: Time since start: " + str((time.time() - starttime)))
+  print "Step 5/11: Time since start: " + str((time.time() - starttime))
   #Step 6: Load genomic databases into memory
   nucdescriptions, nucdict, proteininfo = load_databases(querylist, blastdict, opts.nrcpus, opts.db, opts.dbtype)
-  print("Step 6/11: Time since start: " + str((time.time() - starttime)))
+  print "Step 6/11: Time since start: " + str((time.time() - starttime))
   #Step 7: Locate Blast hits in genomes
   blastdict, geneposdict, hitclusters, clusters, multiplehitlist = find_genomic_loci(blastdict, nucdict, proteininfo, opts.distancekb, querylist, nucdescriptions, dnaseqlength)
-  print("Step 7/11: Time since start: " + str((time.time() - starttime)))
+  print "Step 7/11: Time since start: " + str((time.time() - starttime))
   #Step 8: Score Blast output on all loci
   opts.pages = score_blast_output(hitclusters, querylist, blastdict, multiplehitlist, proteins, proteininfo, querytags, opts.infile, clusters, nucdescriptions, opts.pages, arch_search, opts.syntenyweight)
-  print("Step 8/11: Time since start: " + str((time.time() - starttime)))
+  print "Step 8/11: Time since start: " + str((time.time() - starttime))
   #Output. From here, iterate for every page
   for page in [pagenr + 1 for pagenr in range(opts.pages)]:
 
     #Step 9: Write MultiGeneBlast SVGs
     queryclusterdata, colorschemedict, clusterblastpositiondata, blastdetails, mgb_scores = write_svgs(page, opts.screenwidth, internalhomologygroupsdict, arch_search)
-    print("Step 9/11, page " + str(page) + ": Time since start: " + str((time.time() - starttime)))
+    print "Step 9/11, page " + str(page) + ": Time since start: " + str((time.time() - starttime))
 
     #Step 10: Create muscle alignments
     musclegroups = align_muscle(opts.muscle, colorschemedict, seqdict)
-    print("Step 10/11, page " + str(page) + ": Time since start: " + str((time.time() - starttime)))
+    print "Step 10/11, page " + str(page) + ": Time since start: " + str((time.time() - starttime))
 
     #Step 11: Create XHTML output file
     create_xhtml_file(queryclusterdata, clusters, clusterblastpositiondata, nucname, page, opts.pages, opts.screenwidth, blastdetails, mgb_scores, musclegroups, colorschemedict, opts.dbtype)
-    print("Step 11/11, page " + str(page) + ": Time since start: " + str((time.time() - starttime)))
+    print "Step 11/11, page " + str(page) + ": Time since start: " + str((time.time() - starttime))
 
   #Move all files to specified output folder
   move_outputfiles(opts.outputfolder, opts.pages)  
 
   #Close log file
-  print("MultiGeneBlast successfully finished in " + str((time.time() - starttime)) + " seconds.\n")
+  print "MultiGeneBlast successfully finished in " + str((time.time() - starttime)) + " seconds.\n"
 
 if __name__ == '__main__':
   freeze_support()

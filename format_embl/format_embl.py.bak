@@ -31,15 +31,15 @@ import itertools
 try:
   annotationtable = [i.split("\t") for i in open("annotationtable.txt","r").read().split("\n") if len(i.split("\t")) > 3]
 except:
-  print("""Please create a TXT file 'annotationtable.txt', with CDS info for your contigs.
+  print """Please create a TXT file 'annotationtable.txt', with CDS info for your contigs.
 The table in 'annotationtable.txt' should contain the following columns, which should be ordered in the order in which they appear on the DNA.
 1. FASTA file name of contig (which should be placed in same folder)
 2. Gene locus tag
 3. 5' gene or exon start
 4. 3' gene or exon stop
-5. Gene function / annotation""")
+5. Gene function / annotation"""
   sys.exit()
-print("Reading annotations")
+print "Reading annotations"
 
 #Quality check for unicity of locus tags in annotation table
 lastitem = ""
@@ -48,7 +48,7 @@ for i in [j[0] for j in annotationtable]:
   if i == lastitem:
     continue
   elif i in unique_items:
-    print("Not all locus tags in your table are unique for a gene. Please correct this.")
+    print "Not all locus tags in your table are unique for a gene. Please correct this."
     sys.exit()
   else:
     unique_items.append(i)
@@ -69,10 +69,10 @@ for sequencefile in sequencefiles:
   try:
     seq = open(sequencefile,"r").read().partition(">")[2].partition("\n")[2].replace(" ","").replace("\n","").replace("\t","")
   except:
-    print("Sequence file ", sequencefile, "not found. Please modify annotationtable.txt")
+    print "Sequence file ", sequencefile, "not found. Please modify annotationtable.txt"
     sys.exit()
   if ">" in seq:
-    print(sequencefile,"MultiFASTA sequence file provided. Please provide a single DNA sequence FASTA file.")
+    print sequencefile,"MultiFASTA sequence file provided. Please provide a single DNA sequence FASTA file."
   dnaseqlength = len(seq)
   sequencedict[sequencefile] = [seq.lower(), dnaseqlength]
 
@@ -257,7 +257,7 @@ for annotationtablename in annotationtablenames:
     x += 1
   out_file = open(annotationtablename.rpartition(".")[0] + '.embl',"w")
   a = 0
-  print("Writing EMBL file based on",annotationtablename,"...")
+  print "Writing EMBL file based on",annotationtablename,"..."
   out_file.write("ID   A01; SV 1; linear; DNA; STD; FUN; " + str(dnaseqlength) + " BP.\nXX\n")
   out_file.write("AC   A01;\nXX\n")
   out_file.write("DE   unknown organism;\nXX\n")
@@ -287,7 +287,7 @@ for annotationtablename in annotationtablenames:
   textlen = len(seq)
   end = textlen - (textlen % grouplen)
   repeated_iterator = [iter(itertools.islice(seq, 0, end))] * grouplen
-  parts = list(map(lambda *chars: ''.join(chars),*repeated_iterator))
+  parts = list(itertools.imap(lambda *chars: ''.join(chars),*repeated_iterator))
   if dnaseqlength%grouplen != 0:
     parts.append(seq[-1 * (dnaseqlength%grouplen):])
   w = 1

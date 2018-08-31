@@ -24,7 +24,7 @@ for folder in pathfolders:
   except:
     pass
 if MGBPATH == "":
-  print("Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder.")
+  print "Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder."
   sys.exit(1)
 #Set other environment variables
 os.environ['EXEC'] = MGBPATH + os.sep + "exec"
@@ -54,18 +54,18 @@ def main():
     args = args[2:]
     #Checks to prevent overwriting
     if dbname + ".pal" in os.listdir("."):
-      print("Error: a database with this name already exists")
+      print "Error: a database with this name already exists"
       sys.exit()
     if "genbank" in os.listdir("."):
-      print("A folder named 'genbank' (which is used by MultiGeneBlast to store downloaded GenBank files) is already present in this folder.\n Overwrite? <y/n>")
-      user_response = input()
+      print "A folder named 'genbank' (which is used by MultiGeneBlast to store downloaded GenBank files) is already present in this folder.\n Overwrite? <y/n>"
+      user_response = raw_input()
       if user_response.upper() == "N":
         sys.exit(1)
       else:
         shutil.rmtree("genbank")
     if "WGS" in args and "wgs" in os.listdir("."):
-      print("A folder named 'wgs' (which is used by MultiGeneBlast to store downloaded WGS GenBank files) is already present in this folder.\n Overwrite? <y/n>")
-      user_response = input()
+      print "A folder named 'wgs' (which is used by MultiGeneBlast to store downloaded WGS GenBank files) is already present in this folder.\n Overwrite? <y/n>"
+      user_response = raw_input()
       if user_response.upper() == "N":
         sys.exit(1)
       else:
@@ -100,7 +100,7 @@ def main():
   #Create Blast database and TAR archives
   try:
     if "\n" not in open(dbname + "_all.fasta","r").read():
-      print("Error making BLAST database; no suitable sequences found in input.")
+      print "Error making BLAST database; no suitable sequences found in input."
       log("Error making BLAST database; no suitable sequences found in input.", exit=True)
   except:
     pass
@@ -169,7 +169,7 @@ def gui_runmgbdb(args, dbname):
     #Create Blast database and TAR archives
     try:
       if "\n" not in open(dbname + "_all.fasta","r").read():
-        print("Error making BLAST database; no suitable sequences found in input.")
+        print "Error making BLAST database; no suitable sequences found in input."
         log("Error making BLAST database; no suitable sequences found in input.", exit=True)
     except:
       pass

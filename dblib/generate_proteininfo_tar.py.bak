@@ -1,19 +1,19 @@
-import pickle as pickle
+import cPickle as pickle
 import sys
 import os
 import tarfile
 import shutil
 import fileinput
-from .utils import log, clean_up
+from utils import log, clean_up
 
 def sortdictkeysbyvalues(dict):
-    items = [(len(list(dict[key].keys())), key) for key, value in list(dict.items())]
+    items = [(len(dict[key].keys()), key) for key, value in dict.items()]
     items.sort()
     return [key for value, key in items]
 
 def generate_proteininfo_tar(dbname, frame=None, outbox=None, GUI="n"):
   if GUI == "n":
-    print("Generating proteininfo TAR archive")
+    print "Generating proteininfo TAR archive"
     log("Generating proteininfo TAR archive")
   #Create proteininfo directory if nonexistent
   try:
@@ -36,11 +36,11 @@ def generate_proteininfo_tar(dbname, frame=None, outbox=None, GUI="n"):
         genome = tabs[0]
         illegal_chars  = '''!"#$%&()*+,:;=>?@[]^`'{|} '''
         tag = "".join([char for char in protein[:4] if char not in illegal_chars]).upper()
-        if tag in proteininfodict:
-            if protein in proteininfodict[tag]:
+        if proteininfodict.has_key(tag):
+            if proteininfodict[tag].has_key(protein):
               #fileinput.close()
               #clean_up(dbname, exit=True)
-              print("Warning: non-unique protein accession:" + protein + "\n")
+              print "Warning: non-unique protein accession:" + protein + "\n"
               log("Warning: non-unique protein accession:" + protein + "\n", exit=False)
             proteininfodict[tag][protein] = i
         else:
@@ -55,24 +55,24 @@ def generate_proteininfo_tar(dbname, frame=None, outbox=None, GUI="n"):
         genome = tabs[0]
         illegal_chars  = '''!"#$%&()*+,:;=>?@[]^`'{|} '''
         tag = "".join([char for char in protein[:4] if char not in illegal_chars]).upper()
-        if tag in proteininfodict:
-            if protein in proteininfodict[tag]:
+        if proteininfodict.has_key(tag):
+            if proteininfodict[tag].has_key(protein):
               #fileinput.close()
               #clean_up(dbname, exit=True)
-              print("Warning: non-unique protein accession:" + protein + "\n")
+              print "Warning: non-unique protein accession:" + protein + "\n"
               log("Warning: non-unique protein accession:" + protein + "\n", exit=False)
             proteininfodict[tag][protein] = i
         else:
           proteininfodict[tag] = {}
           proteininfodict[tag][protein] = i
-        for j in list(proteininfodict.keys()):
+        for j in proteininfodict.keys():
           if GUI == "y":
             frame.update()
           try:
             picklefile = open("proteininfo" + os.sep + j + ".pickle","rb")
             tagdict = pickle.load(picklefile)
             picklefile.close()
-            tempdict = dict(list(proteininfodict[j].items()) + list(tagdict.items()))
+            tempdict = dict(proteininfodict[j].items() + tagdict.items())
             outfile = open("proteininfo" + os.sep + j + ".pickle","wb")
             pickle.dump(tempdict,outfile)
             outfile.close()
@@ -94,7 +94,7 @@ def generate_proteininfo_tar(dbname, frame=None, outbox=None, GUI="n"):
       picklefile = open("proteininfo" + os.sep + j + ".pickle","rb")
       tagdict = pickle.load(picklefile)
       picklefile.close()
-      tempdict = dict(list(proteininfodict[j].items()) + list(tagdict.items()))
+      tempdict = dict(proteininfodict[j].items() + tagdict.items())
       outfile = open("proteininfo" + os.sep + j + ".pickle","wb")
       pickle.dump(tempdict,outfile)
       outfile.close()
@@ -113,7 +113,7 @@ def generate_proteininfo_tar(dbname, frame=None, outbox=None, GUI="n"):
     tar.add("proteininfo")
     tar.close()
   except:
-    print("Could not create TAR file from genecords folder. Please create archive manually.")
+    print "Could not create TAR file from genecords folder. Please create archive manually."
     log("Could not create TAR file from genecords folder. Please create archive manually.", exit=True)
   if GUI == "y":
     frame.update()

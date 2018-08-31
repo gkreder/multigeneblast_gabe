@@ -104,10 +104,10 @@ def makeblastdb(dbname, infile, dbtype):
   output = output.stdout.read()
   if "Error" in output:
     if "it is empty" in output:
-      print("Error making BLAST database; no suitable sequences found in input.")
+      print "Error making BLAST database; no suitable sequences found in input."
       log("Error making BLAST database; no suitable sequences found in input.", exit=True)
     else:
-      print("Error making BLAST database.")
+      print "Error making BLAST database."
       log("Error making BLAST database.", exit=True)
 
 def make_blast_db(dbname, infile, frame=None, GUI="n", dbtype="prot"):
@@ -127,7 +127,7 @@ def make_blast_db(dbname, infile, frame=None, GUI="n", dbtype="prot"):
 
 def testaccession(accession):
   #Test if accession number is probably real GenBank/RefSeq acc nr
-  numbers = list(range(0,10))
+  numbers = range(0,10)
   letters = []
   for i in ascii_letters:
     letters.append(i)
@@ -228,7 +228,7 @@ def get_accession(entry, entrynr, entrytype, accessions, seqfilename, dbname):
       else:
         accession = fix_accession(seqfilename + "_" + str(entrynr))
       if accession in accessions:
-        print("Error: multiple input files with same accession number:", accession)
+        print "Error: multiple input files with same accession number:", accession
         clean_up(dbname)
         sys.exit()
       else:
@@ -251,7 +251,7 @@ def get_accession(entry, entrynr, entrytype, accessions, seqfilename, dbname):
       else:
         accession = fix_accession(seqfilename + "_" + str(entrynr))
       if accession in accessions:
-        print("Error: multiple input files with same accession number:", accession)
+        print "Error: multiple input files with same accession number:", accession
         clean_up(dbname)
         sys.exit()
       else:

@@ -37,8 +37,8 @@ try:
 except:
   pass
 if MGBPATH == "":
-  print("Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder.")
-  enter = input()
+  print "Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder."
+  enter = raw_input()
   sys.exit(1)
  
 #Find path to Application Data
@@ -61,7 +61,7 @@ else:
         os.mkdir(os.environ['HOME'] + os.sep + "multigeneblast_data")
         APPDATA = os.environ['HOME'] + os.sep + "multigeneblast_data"
     except:
-      print("No permission to write to installation folder. Please change user or save somewhere else.")
+      print "No permission to write to installation folder. Please change user or save somewhere else."
       sys.exit()
 if sys.platform == ('darwin') or sys.platform == ('win32'):
   try:
@@ -90,16 +90,16 @@ else:
   USERDIR = os.environ['HOME']
 
 
-from tkinter import *
-import tkinter.filedialog
-from tkinter.messagebox import askyesno, showerror, showinfo
-from tkinter.ttk import Frame, Label, Scale, Style
+from Tkinter import *
+import tkFileDialog
+from tkMessageBox import askyesno, showerror, showinfo
+from ttk import Frame, Label, Scale, Style
 import webbrowser
 from guilib import *
 from read_input_gui import *
 from multigeneblast import *
 import time
-import urllib.request, urllib.error, urllib.parse
+import urllib2
 import tarfile
 import traceback
 
@@ -429,7 +429,7 @@ def runmgb(frame, infile, cstart, cend, genes, outfolder, database, cores, seqco
 def file_open():
     global APPDATA
     if SearchPrefs.searchtype.get() == "homology":
-      location = tkinter.filedialog.askopenfilename(filetypes=(("GenBank files",('*.gbk','*.gb','*.genbank')),("EMBL files",('*.embl','*.emb'))), initialdir=APPDATA)
+      location = tkFileDialog.askopenfilename(filetypes=(("GenBank files",('*.gbk','*.gb','*.genbank')),("EMBL files",('*.embl','*.emb'))), initialdir=APPDATA)
       infile.set(location)
       genes, dnaseqlength = read_input_file_gui(infile.get())
       if dnaseqlength != 0:
@@ -439,14 +439,14 @@ def file_open():
       else:
         infile.set("<No file selected>")
     else:
-      location = tkinter.filedialog.askopenfilename(filetypes=(("FASTA files",('*.fasta','*.fas','*.fa')),("All file types",('*.*'))))
+      location = tkFileDialog.askopenfilename(filetypes=(("FASTA files",('*.fasta','*.fas','*.fa')),("All file types",('*.*'))))
       if checkfasta(location) == 1:
         infile.set(location)
     #frame.update_idletasks()
 
 def db_open():
     global APPDATA
-    location = tkinter.filedialog.askopenfilename(initialdir = APPDATA, filetypes=(("MGB database files",('*.pal','*.nal')),("MGB database files",())))
+    location = tkFileDialog.askopenfilename(initialdir = APPDATA, filetypes=(("MGB database files",('*.pal','*.nal')),("MGB database files",())))
     if len(location) > 0:
       folder = location.rpartition("/")[0]
       basename = location.rpartition("/")[2].rpartition(".")[0]
@@ -488,7 +488,7 @@ class SearchPreferences:
     if searchtype.get() == 1:
       self.searchtype.set("homology")
       infile.set("<No file selected>")
-      if len(list(self.text2.grid_info().keys())) == 0:
+      if len(self.text2.grid_info().keys()) == 0:
         self.text2.grid(row=6,column=0)
         self.text3.grid(row=7,column=0)
         self.text4.grid(row=8,column=0)
@@ -498,7 +498,7 @@ class SearchPreferences:
     elif searchtype.get() == 2:
       self.searchtype.set("architecture")
       infile.set("<No file selected>")
-      if len(list(self.text2.grid_info().keys())) > 0:
+      if len(self.text2.grid_info().keys()) > 0:
         self.text2.grid_forget()
         self.text3.grid_forget()
         self.text4.grid_forget()
@@ -655,7 +655,7 @@ def db_download():
   frame.update()
   #Download the MGB GenBank database
   try:
-    req = urllib.request.urlopen(file_url)
+    req = urllib2.urlopen(file_url)
   except:
     showerror('Error', 'File not found on server.\nPlease check your internet connection.')
     return

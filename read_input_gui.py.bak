@@ -5,7 +5,7 @@
 ## License: GNU General Public License v3 or later
 ## A copy of GNU GPL v3 should have been included in this software package in LICENSE.txt.
 
-from tkinter.messagebox import showerror
+from tkMessageBox import showerror
 from multigeneblast import cleandnaseq, parse_dna_from_embl
 
 def parsegenes_gui(genes):

@@ -7,16 +7,16 @@
 
 import multiprocessing
 import webbrowser
-import tkinter.filedialog
-from tkinter.messagebox import askyesno, showerror, showwarning, showinfo
-from tkinter.ttk import Frame, Label, Scale, Style
-from tkinter import Tk, BOTH, IntVar, Checkbutton, Spinbox, Listbox, StringVar, Entry, Button, Toplevel, TOP, RIGHT, LEFT, BOTTOM, Y, END, EXTENDED, Scrollbar, Text, NORMAL, INSERT, DISABLED, SINGLE, S, N, TclError
+import tkFileDialog
+from tkMessageBox import askyesno, showerror, showwarning, showinfo
+from ttk import Frame, Label, Scale, Style
+from Tkinter import Tk, BOTH, IntVar, Checkbutton, Spinbox, Listbox, StringVar, Entry, Button, Toplevel, TOP, RIGHT, LEFT, BOTTOM, Y, END, EXTENDED, Scrollbar, Text, NORMAL, INSERT, DISABLED, SINGLE, S, N, TclError
 import os
 import sys
 import shutil
 import platform
 import ctypes
-import urllib.request, urllib.error, urllib.parse
+import urllib2
 from dblib.parse_gbk import parse_gbk_embl, nucparse_gbk_embl_fasta
 from dblib.utils import fasta_names, make_blast_db, clean_up, get_accession
 from dblib.generate_genecords_tar import generate_genecords_tar
@@ -43,8 +43,8 @@ try:
 except:
   pass
 if MGBPATH == "":
-  print("Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder.")
-  enter = input()
+  print "Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder."
+  enter = raw_input()
   sys.exit(1)
  
 #Find path to Application Data
@@ -67,7 +67,7 @@ else:
         os.mkdir(os.environ['HOME'] + os.sep + "multigeneblast_data")
         APPDATA = os.environ['HOME'] + os.sep + "multigeneblast_data"
     except:
-      print("No permission to write to installation folder. Please change user or save somewhere else.")
+      print "No permission to write to installation folder. Please change user or save somewhere else."
       sys.exit()
 if sys.platform == ('darwin') or sys.platform == ('win32'):
   try:
@@ -101,7 +101,7 @@ def cancel_download(req, toplevel):
 
 def get_remote_filesize(url):
   try:
-    usock = urllib.request.urlopen(url)
+    usock = urllib2.urlopen(url)
     dbfilesize = usock.info().get('Content-Length')
     if dbfilesize is None:
         dbfilesize = 0
@@ -159,7 +159,7 @@ def checkfoldername(foldername):
 
 def about():
     webbrowser.open('http://multigeneblast.sourceforge.net/')
-    print("Navigating to MultiGeneBlast web page on Sourceforge.net")
+    print "Navigating to MultiGeneBlast web page on Sourceforge.net"
 
 def validname(string):
     forbiddencharacters = ["'",'"','=',':',';','-','[',']','>','<','|','\\',"/",'*',',','?',')','(','^','#','!','`','~','+','{','}','@','$','%','&']
@@ -435,7 +435,7 @@ class GenBankFileDownload(Frame):
         url += "&retmode=text&retmax=251&tool=multigeneblast&email=m.h.medema@rug.nl"
         #Search all IDs matching the query
         try:
-          req = urllib.request.urlopen(url)
+          req = urllib2.urlopen(url)
           xmltext = req.read()
           xmltext = xmltext.partition("<IdList>")[2].partition("</IdList>")[0]
           ids = [ID.partition("</Id>")[0] for ID in xmltext.split("<Id>")[1:]]
@@ -461,7 +461,7 @@ class GenBankFileDownload(Frame):
         loading.bind("<Escape>", lambda e: "return")
         self.modalPane.update()
         try:
-          req = urllib.request.urlopen(url)
+          req = urllib2.urlopen(url)
           xmltext = req.read()
           if "<DocSum>" not in xmltext or '<Item Name="Title" Type="String">' not in xmltext:
             showerror('Error', 'Error in fetching match descriptions from NCBI server.')
@@ -491,7 +491,7 @@ class GenBankFileDownload(Frame):
         os.chdir(self.directory)
         ID = self.ids[int(Selected)]
         url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=" + ID + "&rettype=gbwithparts&retmode=text&tool=multigeneblast&email=m.h.medema@rug.nl"
-        filename = tkinter.filedialog.asksaveasfilename(defaultextension="gbk", filetypes = [('GenBank files', '.gbk'), ('all files', '.*')])
+        filename = tkFileDialog.asksaveasfilename(defaultextension="gbk", filetypes = [('GenBank files', '.gbk'), ('all files', '.*')])
         #Open 'loading...' message
         loading = Toplevel(self.modalPane, height=200, width=400)
         loading.title("Download progress")
@@ -501,7 +501,7 @@ class GenBankFileDownload(Frame):
         loading.bind("<Escape>", lambda e: "return")
         self.modalPane.update()
         try:
-          req = urllib.request.urlopen(url)
+          req = urllib2.urlopen(url)
         except:
           showerror('Error', 'File not found on server.\nPlease check your internet connection.')
           loading.destroy()
@@ -541,7 +541,7 @@ class OutputFolderSelectionFrame(Frame):
         self.initUI()
       
     def select(self):
-        selected = tkinter.filedialog.askdirectory(initialdir=self.initialDir, mustexist=False)
+        selected = tkFileDialog.askdirectory(initialdir=self.initialDir, mustexist=False)
         if selected != None and selected != "":
           if sys.platform == ('linux2') and selected[0] != os.sep:
               showerror("Error", "Please supply the full path of the folder.")
@@ -549,17 +549,17 @@ class OutputFolderSelectionFrame(Frame):
           if sys.platform == ('win32') or sys.platform == ('linux2'):
             while os.path.exists(selected):
               showerror("Error", "Please change the directory name to select a new directory instead of an existing one.")
-              selected = tkinter.filedialog.askdirectory(initialdir=self.initialDir, mustexist=False)
+              selected = tkFileDialog.askdirectory(initialdir=self.initialDir, mustexist=False)
               try:
                 os.mkdir(selected)
                 shutil.rmtree(selected)
               except:
                 showerror("Error", "No permission to write to this folder. Please choose a directory in which you have writing permissions.")
-                selected = tkinter.filedialog.askdirectory(initialdir=self.initialDir, mustexist=False)
+                selected = tkFileDialog.askdirectory(initialdir=self.initialDir, mustexist=False)
           else:
             while len(os.listdir(selected)) > 0:
               showerror("Error", "Please change the directory name to select a new directory instead of an existing one.")
-              selected = tkinter.filedialog.askdirectory(initialdir=self.initialDir, mustexist=False)
+              selected = tkFileDialog.askdirectory(initialdir=self.initialDir, mustexist=False)
           self.folder_entry.config(state=NORMAL)
           self.selected.set(selected)
           self.folder_entry.config(state=DISABLED)
@@ -701,7 +701,7 @@ class MessageBox(object):
 
     def sendreport(self, event=None):
       try:
-        webbrowser.open("mailto:multigeneblast@gmail.com?SUBJECT=ErrorReport&BODY=" + urllib.parse.quote(self.errormessage.encode("utf8")))
+        webbrowser.open("mailto:multigeneblast@gmail.com?SUBJECT=ErrorReport&BODY=" + urllib2.quote(self.errormessage.encode("utf8")))
       except:
         webbrowser.open("sourceforge.net/tracker/?func=add&group_id=565495&atid=2293721")
       else:
@@ -788,9 +788,9 @@ class MakeDatabase(Frame):
 
     def _addfile(self):
         if self.dbtype.getval() == 0:
-          filenames = tkinter.filedialog.askopenfilename(multiple=True, filetypes=(("GenBank files",('*.gbk','*.gb','*.genbank')),("EMBL files",('*.embl','*.emb'))), title="Select files", initialdir=self.directory)
+          filenames = tkFileDialog.askopenfilename(multiple=True, filetypes=(("GenBank files",('*.gbk','*.gb','*.genbank')),("EMBL files",('*.embl','*.emb'))), title="Select files", initialdir=self.directory)
         else:
-          filenames = tkinter.filedialog.askopenfilename(multiple=True, filetypes=(("FASTA files",('*.fasta','*.fa','*.fas')), ("GenBank files",('*.gbk','*.gb','*.genbank')),("EMBL files",('*.embl','*.emb'))), title="Select files", initialdir=self.directory)
+          filenames = tkFileDialog.askopenfilename(multiple=True, filetypes=(("FASTA files",('*.fasta','*.fa','*.fas')), ("GenBank files",('*.gbk','*.gb','*.genbank')),("EMBL files",('*.embl','*.emb'))), title="Select files", initialdir=self.directory)
         if sys.platform == ('win32'):
           if "} {" in filenames:
             filenames = [str(filename) for filename in filenames[1:-1].split("} {")]
@@ -917,7 +917,7 @@ def runmakedb(frame, makedb_outbox, inputfiles, dbname):
     #Create genbank_mf_all_descrs.txt file
     log("Generating " + dbname + "_all_descr.txt file", frame, makedb_outbox)
     descrfile = open(dbname + "_all_descrs.txt","w")
-    descrkeys = list(descriptions.keys())
+    descrkeys = descriptions.keys()
     descrkeys.sort()
     for key in descrkeys:
       descrfile.write(key + "\t" + descriptions[key] + "\n")
@@ -950,7 +950,7 @@ def runmakendb(frame, makedb_outbox, inputfiles, dbname):
     #Create genbank_mf_all_descr.txt file
     log("Generating _all.txt file", frame, makedb_outbox)
     outfile = open(dbname + "_all_descrs.txt","w")
-    for key in list(descriptions.keys()):
+    for key in descriptions.keys():
       outfile.write(key + "\t" + descriptions[key] + "\n")
     outfile.close()
 
@@ -1107,7 +1107,7 @@ class MakeOnlineDatabase(Frame):
         url += "&retmode=text&retmax=251&tool=multigeneblast&email=m.h.medema@rug.nl"
         #Search all IDs matching the query
         try:
-          req = urllib.request.urlopen(url)
+          req = urllib2.urlopen(url)
           xmltext = req.read()
           xmltext = xmltext.partition("<IdList>")[2].partition("</IdList>")[0]
           ids = [ID.partition("</Id>")[0] for ID in xmltext.split("<Id>")[1:]]
@@ -1134,7 +1134,7 @@ class MakeOnlineDatabase(Frame):
         loading.bind("<Escape>", lambda e: "return")
         self.modalPane.update()
         try:
-          req = urllib.request.urlopen(url)
+          req = urllib2.urlopen(url)
           xmltext = req.read()
           if "<DocSum>" not in xmltext or '<Item Name="Title" Type="String">' not in xmltext:
             showerror('Error', 'Error in fetching match descriptions from NCBI server.')
@@ -1208,7 +1208,7 @@ class MakeOnlineDatabase(Frame):
         loading.bind("<Escape>", lambda e: "return")
         self.modalPane.update()
         try:
-          req = urllib.request.urlopen(url)
+          req = urllib2.urlopen(url)
         except:
           showerror('Error', 'File not found on server.\nPlease check your internet connection.')
           loading.destroy()

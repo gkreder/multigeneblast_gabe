@@ -24,7 +24,7 @@ for folder in pathfolders:
   except:
     pass
 if MGBPATH == "":
-  print("Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder.")
+  print "Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder."
   sys.exit(1)
 #Set other environment variables
 os.environ['EXEC'] = MGBPATH + os.sep + "exec"
@@ -35,11 +35,8 @@ from multiprocessing import Process, freeze_support
 from time import sleep
 from dblib.utils import *
 from dblib.download_genbank import *
-from dblib.parse_seq import parse_seq
-from dblib.parse_con import parse_con
-from dblib.parse_gnp import parse_gnp, parse_gnp_descr
-from dblib.generate_genecords_tar import generate_genecords_tar
-from dblib.generate_proteininfo_tar import generate_proteininfo_tar
+from dblib.parse_seq import parse_nseq
+from dblib.parse_gnp import parse_ngnp
 
 def get_genbank_db(dbname, args, GUI="n", dbtype="prot"):
   #Download GenBank files based on arguments; otherwise download default GenBank files
@@ -53,19 +50,19 @@ def main():
     dbname = args[1]
     args = args[2:]
     #Checks to prevent overwriting
-    if dbname + ".pal" in os.listdir("."):
-      print("Error: a database with this name already exists")
+    if dbname + ".nal" in os.listdir(".") or dbname + ".pal" in os.listdir("."):
+      print "Error: a database with this name already exists"
       sys.exit()
     if "genbank" in os.listdir("."):
-      print("A folder named 'genbank' (which is used by MultiGeneBlast to store downloaded GenBank files) is already present in this folder.\n Overwrite? <y/n>")
-      user_response = input()
+      print "A folder named 'genbank' (which is used by MultiGeneBlast to store downloaded GenBank files) is already present in this folder.\n Overwrite? <y/n>"
+      user_response = raw_input()
       if user_response.upper() == "N":
         sys.exit(1)
       else:
         shutil.rmtree("genbank")
     if "WGS" in args and "wgs" in os.listdir("."):
-      print("A folder named 'wgs' (which is used by MultiGeneBlast to store downloaded WGS GenBank files) is already present in this folder.\n Overwrite? <y/n>")
-      user_response = input()
+      print "A folder named 'wgs' (which is used by MultiGeneBlast to store downloaded WGS GenBank files) is already present in this folder.\n Overwrite? <y/n>"
+      user_response = raw_input()
       if user_response.upper() == "N":
         sys.exit(1)
       else:
@@ -74,19 +71,14 @@ def main():
     dbname = ""
     args = []
   
-  get_genbank_db(dbname, args)  ##Can be commented out for testing of local parsing
+  get_genbank_db(dbname, args, dbtype="nucl")  ##Can be commented out for testing of local parsing
   
   #Parse normal SEQ entries, descriptions
-  parse_seq(dbname, find_seqfiles("genbank"))
-  
-  if "CON" in args:
-    #Parse CON entries, descriptions
-    parse_con(dbname, find_confiles("genbank"))
+  parse_nseq(dbname, find_seqfiles("genbank"))
 
   if "WGS" in args:
     #Parse WGS entries, descriptions
-    parse_gnp(dbname, find_gnpfiles("wgs"))
-    parse_gnp_descr(dbname, find_gbff_files("wgs"))
+    parse_ngnp(dbname, find_ngnpfiles("wgs"))
   
   #Combine descriptions files
   combine_txt_files(dbname)
@@ -99,17 +91,15 @@ def main():
 
   #Create Blast database and TAR archives
   try:
-    if "\n" not in open(dbname + "_all.fasta","r").read():
-      print("Error making BLAST database; no suitable sequences found in input.")
+    if "\n" not in open(dbname + "_all.fasta","r").read(10000):
+      print "Error making BLAST database; no suitable sequences found in input."
       log("Error making BLAST database; no suitable sequences found in input.", exit=True)
   except:
     pass
-  make_blast_db(dbname, dbname + "_all.fasta")
-  generate_genecords_tar(dbname)
-  generate_proteininfo_tar(dbname)
+  make_blast_db(dbname, dbname + "_all.fasta", dbtype="nucl")
   
   #Clean up
-  clean_up(dbname)
+  clean_up(dbname, dbtype="nucl")
   
 def maingui(args, dbname, frame, outbox):
   freeze_support()
@@ -117,7 +107,7 @@ def maingui(args, dbname, frame, outbox):
   startpath = os.getcwd()
   logfile.close()
   freeze_support()
-  makegbdbprocess = Process(target=gui_runmgbdb, args=[args, dbname])
+  makegbdbprocess = Process(target=gui_runmgbndb, args=[args, dbname])
   makegbdbprocess.start()
   loglinesprocessed = []
   while True:
@@ -141,21 +131,16 @@ def maingui(args, dbname, frame, outbox):
     outbox.text_insert(line)
   frame.update()
 
-def gui_runmgbdb(args, dbname):
+def gui_runmgbndb(args, dbname):
   try:
-    get_genbank_db(dbname, args, GUI="y")  ##Can be commented out for testing of local parsing
+    get_genbank_db(dbname, args, GUI="y", dbtype="nucl")  ##Can be commented out for testing of local parsing
 
     #Parse normal SEQ entries, descriptions
-    parse_seq(dbname, find_seqfiles("genbank"))
-
-    if "CON" in args:
-      #Parse CON entries, descriptions
-      parse_con(dbname, find_confiles("genbank"))
+    parse_nseq(dbname, find_seqfiles("genbank"))
 
     if "WGS" in args:
       #Parse WGS entries, descriptions
-      parse_gnp(dbname, find_gnpfiles("wgs"))
-      parse_gnp_descr(dbname, find_gbff_files("wgs"))
+      parse_ngnp(dbname, find_ngnpfiles("wgs"))
 
     #Combine descriptions files
     combine_txt_files(dbname)
@@ -167,18 +152,13 @@ def gui_runmgbdb(args, dbname):
     fasta_names(dbname + "_all.fasta", dbname + "_all.txt")
 
     #Create Blast database and TAR archives
-    try:
-      if "\n" not in open(dbname + "_all.fasta","r").read():
-        print("Error making BLAST database; no suitable sequences found in input.")
-        log("Error making BLAST database; no suitable sequences found in input.", exit=True)
-    except:
-      pass
-    make_blast_db(dbname, dbname + "_all.fasta")
-    generate_genecords_tar(dbname)
-    generate_proteininfo_tar(dbname)
+    if "\n" not in open(dbname + "_all.fasta","r").read(10000):
+      print "Error making BLAST database; no suitable sequences found in input."
+      log("Error making BLAST database; no suitable sequences found in input.", exit=True)
+    make_blast_db(dbname, dbname + "_all.fasta", dbtype="nucl")
 
     #Clean up
-    clean_up(dbname)
+    clean_up(dbname, dbtype="nucl")
   except:
     log("Error: MakeGBDB process terminated prematurely.\n", exit=True)
 

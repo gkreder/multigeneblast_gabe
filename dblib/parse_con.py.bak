@@ -6,9 +6,9 @@
 ## A copy of GNU GPL v3 should have been included in this software package in LICENSE.txt.
 
 import os
-from .utils import *
-from .gbkparser import *
-from .download_genbank import extract_file
+from utils import *
+from gbkparser import *
+from download_genbank import extract_file
 
 def parse_confiles(dbname, confiles):
   for confile in confiles:
@@ -24,7 +24,7 @@ def parse_con(dbname, confiles):
     confile = confile.replace(".gz","")
     outputfile1 = open(confile.rpartition(".")[0] + ".fasta","w")
     confastafiles.append(confile.rpartition(".")[0] + ".fasta")
-    print("Parsing " + confile)
+    print "Parsing " + confile
     allnames = []
     allseqs = []
     #Open seq file  
@@ -59,7 +59,7 @@ def parse_con(dbname, confiles):
     infile.close()
     outputfile1.close()
     #Parsing CON descriptions
-    print("Parsing " + confile + " descriptions")
+    print "Parsing " + confile + " descriptions"
     #Open seq file  
     infile = open(confile,"r")
     #Divide in GBK files
@@ -120,7 +120,7 @@ def parse_con(dbname, confiles):
   merge_confastafiles(dbname, confastafiles)
 
 def merge_confastafiles(dbname, confastafiles):
-  print("Merging CON files")
+  print "Merging CON files"
   outfile = open(dbname + "_con.fasta","w")
   for fname in confastafiles:
     content = open(fname,"r")

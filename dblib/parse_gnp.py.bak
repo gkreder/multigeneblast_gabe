@@ -5,9 +5,9 @@
 ## License: GNU General Public License v3 or later
 ## A copy of GNU GPL v3 should have been included in this software package in LICENSE.txt.
 
-from .utils import *
-from .gbkparser import *
-from .download_genbank import extract_file
+from utils import *
+from gbkparser import *
+from download_genbank import extract_file
 import os
 
 def parse_gnp(dbname, gnpfiles):
@@ -16,7 +16,7 @@ def parse_gnp(dbname, gnpfiles):
   for gnpfile in gnpfiles:
     extract_file(gnpfile)
     gnpfile = gnpfile.replace(".gz","")
-    print("Parsing " + gnpfile)
+    print "Parsing " + gnpfile
     log("Parsing " + gnpfile)
     allnames = []
     allseqs = []
@@ -47,7 +47,7 @@ def parse_gnp_descr(dbname, gbff_files):
   for gbff_file in gbff_files:
     extract_file(gbff_file)
     gbff_file = gbff_file.replace(".gz","")
-    print("Parsing " + gbff_file + " description")
+    print "Parsing " + gbff_file + " description"
     log("Parsing " + gbff_file + " description")
     allnames = []
     allseqs = []
@@ -80,7 +80,7 @@ def parse_gnp_descr(dbname, gbff_files):
       descriptiondict[accession] = description
     writestring = ""
     os.remove(gbff_file)
-  for j in list(descriptiondict.keys()):
+  for j in descriptiondict.keys():
     writestring += j + "\t" + descriptiondict[j] + "\n"
   outputfile.write(writestring)
   outputfile.close()
@@ -92,7 +92,7 @@ def parse_ngnp(dbname, gnpfiles):
   for gnpfile in gnpfiles:
     extract_file(gnpfile)
     gnpfile = gnpfile.replace(".gz","")
-    print("Parsing " + gnpfile)
+    print "Parsing " + gnpfile
     log("Parsing " + gnpfile)
     #Open gnp file  
     infile = open(gnpfile,"r")

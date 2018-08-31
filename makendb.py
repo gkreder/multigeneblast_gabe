@@ -24,7 +24,7 @@ for folder in pathfolders:
   except:
     pass
 if MGBPATH == "":
-  print "Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder."
+  print("Error: Please add the MultiGeneBlast installation directory to your $PATH environment variable before running the executable from another folder.")
   sys.exit(1)
 #Set other environment variables
 os.environ['EXEC'] = MGBPATH + os.sep + "exec"
@@ -33,19 +33,19 @@ os.environ['PATH'] = os.environ['EXEC'] + os.pathsep + os.environ['PATH']
 def parse_options(args):
   #Parse options
   if len(args) < 2:
-    print """
+    print("""
     MAKENDB usage:
     
     Please specify database name and either one or more input files or a folder with input files.
     Usage for files: 'makendb dbname yourfile1.gbk yourfile2.gbk'
     Usage for folder: 'makendb dbname <folder name with input files>'
-    """
+    """)
     sys.exit(1)
   dbname = args[0]
   overwrite = ""
   if dbname + ".nal" in os.listdir(".") or dbname + ".pal" in os.listdir("."):
     while overwrite != "y" and overwrite != "n":
-      overwrite = raw_input("Database with name exists in this folder. Overwrite? (y/n)")
+      overwrite = input("Database with name exists in this folder. Overwrite? (y/n)")
     if overwrite == "n":
       sys.exit(1)
     if dbname + ".nal" in os.listdir("."):
@@ -66,7 +66,7 @@ def parse_options(args):
               try:
                 os.chdir(os.getcwd() + os.sep + arg)
               except:
-                print "Error: cannot open folder", arg.rpartition(os.sep)[2], "or file does not have GBK/EMBL/FASTA extension"
+                print("Error: cannot open folder", arg.rpartition(os.sep)[2], "or file does not have GBK/EMBL/FASTA extension")
                 sys.exit()
           filesfound = "n"
           for filename in os.listdir("."):
@@ -75,16 +75,16 @@ def parse_options(args):
               inputfiles.append(arg.rpartition(os.sep)[2] + os.sep + filename)
               filesfound = "y"
           if filesfound == "n":
-            print "Error: no GBK/EMBL/FASTA files found in folder", arg.rpartition(os.sep)[2]
+            print("Error: no GBK/EMBL/FASTA files found in folder", arg.rpartition(os.sep)[2])
             sys.exit(1)
           os.chdir("..")
         else:
-          print "Please supply input file with valid GBK / EMBL / FASTA extension."
+          print("Please supply input file with valid GBK / EMBL / FASTA extension.")
           sys.exit(1)
     elif arg in os.listdir(".") or (os.sep in arg and arg.rpartition(os.sep)[2] in os.listdir(arg.rpartition(os.sep)[0])):
         inputfiles.append(arg)
     else:
-        print "Error: specified input file", arg , "not found."
+        print("Error: specified input file", arg , "not found.")
         sys.exit(1)
   return inputfiles, dbname
   
@@ -98,19 +98,19 @@ def main():
   logfile = open("makedb.log","w")
 
   #Create FASTA database
-  print "Creating FASTA file"
+  print("Creating FASTA file")
   descriptions = nucparse_gbk_embl_fasta(inputfiles, dbname)
 
   #Create genbank_mf_all_descr.txt file
-  print "Generating _all.txt file"
+  print("Generating _all.txt file")
   outfile = open(dbname + "_all_descrs.txt","w")
-  for key in descriptions.keys():
+  for key in list(descriptions.keys()):
     outfile.write(key + "\t" + descriptions[key] + "\n")
   outfile.close()
 
   #Create Blast database
   if "\n" not in open(dbname + "_dbbuild.fasta","r").read():
-    print "Error making BLAST database; no suitable sequences found in input."
+    print("Error making BLAST database; no suitable sequences found in input.")
     clean_up(dbname, dbtype="nucl")
     sys.exit()
   make_blast_db(dbname, dbname + "_dbbuild.fasta", dbtype="nucl")

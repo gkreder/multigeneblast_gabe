@@ -5,9 +5,9 @@
 ## License: GNU General Public License v3 or later
 ## A copy of GNU GPL v3 should have been included in this software package in LICENSE.txt.
 
-from .utils import *
-from .gbkparser import *
-from .download_genbank import extract_file
+from utils import *
+from gbkparser import *
+from download_genbank import extract_file
 
 def parse_seq(dbname, seqfiles):
   #For all files
@@ -20,7 +20,7 @@ def parse_seq(dbname, seqfiles):
     extract_file(seqfile)
     seqfile = seqfile.replace(".gz","")
     outputfile1 = open(dbname + "_seq.fasta","a")
-    print("Parsing " + seqfile)
+    print "Parsing " + seqfile
     log("Parsing " + seqfile)
     allnames = []
     allseqs = []
@@ -59,7 +59,7 @@ def parse_seq(dbname, seqfiles):
     outputfile1.close()
     #Parse seq file descriptions
     outputfile2 = open(dbname + "_descrs.txt","a")
-    print("Parsing " + seqfile + " descriptions")
+    print "Parsing " + seqfile + " descriptions"
     log("Parsing " + seqfile + " descriptions")
     #Open seq file  
     infile = open(seqfile,"r")
@@ -133,7 +133,7 @@ def parse_nseq(dbname, seqfiles):
     seqfile = seqfile.replace(".gz","")
     outputfile1 = open(dbname + "_seq.fasta","a")
     outputfile2 = open(dbname + "_descrs.txt","a")
-    print("Parsing " + seqfile)
+    print "Parsing " + seqfile
     log("Parsing " + seqfile)
     allnames = []
     allseqs = []

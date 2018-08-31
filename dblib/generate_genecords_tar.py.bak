@@ -1,13 +1,13 @@
-import pickle as pickle
+import cPickle as pickle
 import sys
 import os
 import tarfile
 import shutil
 import fileinput
-from .utils import log
+from utils import log
 
 def sortdictkeysbyvalues(dict):
-    items = [(sum([len(dict[key][subkey]) for subkey in list(dict[key].keys())]), key) for key, value in list(dict.items())]
+    items = [(sum([len(dict[key][subkey]) for subkey in dict[key].keys()]), key) for key, value in dict.items()]
     items.sort()
     return [key for value, key in items]
 
@@ -20,13 +20,13 @@ def save_to_pickle(tag, genome_info_dict):
       picklefile.fast = True
       picklefile.dump(genome_info_dict)
     except:
-      print("Error")
+      print "Error"
       sys.exit()
     outfile.close()
 
 def generate_genecords_tar(dbname, frame=None, outbox=None, GUI="n"):
   if GUI == "n":    
-    print("Generating genecords TAR archive")
+    print "Generating genecords TAR archive"
     log("Generating genecords TAR archive")
   #Create genecords directory if nonexistent
   try:
@@ -57,7 +57,7 @@ def generate_genecords_tar(dbname, frame=None, outbox=None, GUI="n"):
           pickle_file = open("genecords" + os.sep + lasttag + ".pickle", "rb")
           previous_data = pickle.load(pickle_file)
           for key in previous_data:
-            if key in genome_info:
+            if genome_info.has_key(key):
               genome_info[key].extend(previous_data[key])
             else:
               genome_info[key] = previous_data[key]
@@ -65,7 +65,7 @@ def generate_genecords_tar(dbname, frame=None, outbox=None, GUI="n"):
           passedtags.append(lasttag)
         save_to_pickle(lasttag, genome_info)
         genome_info = {}
-      if genome in genome_info:
+      if genome_info.has_key(genome):
         genome_info[genome].append(i)
       else:
         genome_info[genome] = [i]
@@ -76,7 +76,7 @@ def generate_genecords_tar(dbname, frame=None, outbox=None, GUI="n"):
     pickle_file = open("genecords" + os.sep + lasttag + ".pickle", "rb")
     previous_data = pickle.load(pickle_file)
     for key in previous_data:
-      if key in genome_info:
+      if genome_info.has_key(key):
         genome_info[key].extend(previous_data[key])
       else:
         genome_info[key] = previous_data[key]
@@ -98,7 +98,7 @@ def generate_genecords_tar(dbname, frame=None, outbox=None, GUI="n"):
     tar.add("genecords")
     tar.close()
   except:
-    print("Could not create TAR file from genecords folder. Please create archive manually.")
+    print "Could not create TAR file from genecords folder. Please create archive manually."
     log("Could not create TAR file from genecords folder. Please create archive manually.", exit=True)
   if GUI == "y":
     frame.update()

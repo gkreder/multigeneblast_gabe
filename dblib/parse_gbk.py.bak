@@ -2,12 +2,11 @@ import os
 import sys
 from string import ascii_letters
 import string
-from .utils import clean_up, get_accession
-import urllib.request, urllib.error, urllib.parse
-from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
-import http.client
-from http.client import BadStatusLine,HTTPException
+from utils import clean_up, get_accession
+import urllib2
+from urllib2 import Request,urlopen,URLError,HTTPError
+import httplib
+from httplib import BadStatusLine,HTTPException
 import time
 
 def reverse_complement(sequence, frame=None, outbox=None, GUI="n"):
@@ -337,9 +336,9 @@ def extractprotfasta(genelist,genedict,dnaseq,rc_dnaseq,joinlist,joindict,access
     if GUI == "y":
       frame.update()
     genename = i
-    if genename in locustagdict:
+    if locustagdict.has_key(genename):
       locustag = locustagdict[genename]
-    if genename.partition(".")[0] in locustagdict:
+    if locustagdict.has_key(genename.partition(".")[0]):
       locustag = locustagdict[genename.partition(".")[0]]
     else:
       locustag = "no_locus_tag"
@@ -447,7 +446,7 @@ def translate(sequence):
     if aanr == 1:
       protseq = protseq + "M"
     else:
-      if "n" in i or "N" in i or i not in list(transldict.keys()):
+      if "n" in i or "N" in i or i not in transldict.keys():
         protseq = protseq + "X"
       else:
         protseq = protseq + transldict[i]
@@ -467,7 +466,7 @@ def writefasta(names,seqs,out_file):
       out_file.write("\n")
       e += 1
   except(IOError,OSError,NotImplementedError):
-    print("FASTA file not created.", file=sys.stderr)
+    print >> sys.stderr, "FASTA file not created."
 
 def parse_dna_from_embl(embl_string, frame, outbox, GUI):
     "Parse DNA sequence from EMBL input"
@@ -492,7 +491,7 @@ def embl2proteins(emblfile, nr=0, filetype="genbank_derived", frame=None, outbox
     if accession == None:
       accession = emblfile.partition("AC   ")[2].partition("\n")[0].replace(";","").partition(" ")[0].replace(" ","")
     if GUI == "n":
-      print("No CDS or DNA sequence found in " + accession + ". Skipping file.")
+      print "No CDS or DNA sequence found in " + accession + ". Skipping file."
     else:
       outbox.text_insert("No CDS or DNA sequence found in " + accession + ". Skipping file.\n")
       frame.update()
@@ -504,7 +503,7 @@ def embl2proteins(emblfile, nr=0, filetype="genbank_derived", frame=None, outbox
   sequence = dnaseq
   if (sequence.count('N') + sequence.count('n') + sequence.count('A') + sequence.count('a') + sequence.count('C') + sequence.count('c') + sequence.count('G') + sequence.count('g') + sequence.count('T') + sequence.count('t')) < (0.5 * len(sequence)):
       if GUI == "n":
-        print("Protein GBK/EMBL file provided. Please provide nucleotide GBK/EMBL file.")
+        print "Protein GBK/EMBL file provided. Please provide nucleotide GBK/EMBL file."
         sys.exit(1)
       else:
         outbox.text_insert("Protein GBK/EMBL file provided. Please provide nucleotide GBK/EMBL file.\n")
@@ -516,7 +515,7 @@ def embl2proteins(emblfile, nr=0, filetype="genbank_derived", frame=None, outbox
   rc_dnaseq = reverse_complement(dnaseq)
   if dnaseqlength < 1:
       if GUI == "n":
-        print("No sequence found in GBK/EMBL file. Please provide an annotated nucleotide GBK/EMBL file with a DNA sequence.")
+        print "No sequence found in GBK/EMBL file. Please provide an annotated nucleotide GBK/EMBL file with a DNA sequence."
         sys.exit(1)
       else:
         outbox.text_insert("No sequence found in GBK/EMBL file. Please provide an annotated nucleotide GBK/EMBL file with a DNA sequence.\n")
@@ -555,7 +554,7 @@ def gbk2proteins(gbkfile, nr=0, filetype="genbank_derived", frame=None, outbox=N
     accession = gbkfile.partition("ACCESSION   ")[2].partition("\n")[0].partition(" ")[0].replace(" ","")
   if "\n     CDS             " not in filetext or "\nORIGIN" not in filetext:
     if GUI == "n":
-      print("No CDS or DNA sequence found in " + accession + ". Skipping file.")
+      print "No CDS or DNA sequence found in " + accession + ". Skipping file."
       return "nocds"
     else:
       outbox.text_insert("No CDS or DNA sequence found in " + accession + ". Skipping file.\n")
@@ -568,7 +567,7 @@ def gbk2proteins(gbkfile, nr=0, filetype="genbank_derived", frame=None, outbox=N
   sequence = dnaseq
   if (sequence.count('N') + sequence.count('n') + sequence.count('A') + sequence.count('a') + sequence.count('C') + sequence.count('c') + sequence.count('G') + sequence.count('g') + sequence.count('T') + sequence.count('t')) < (0.5 * len(sequence)):
       if GUI == "n":
-        print("Protein GBK/EMBL file provided. Please provide nucleotide GBK/EMBL file.")
+        print "Protein GBK/EMBL file provided. Please provide nucleotide GBK/EMBL file."
         sys.exit(1)
       else:
         outbox.text_insert("Protein GBK/EMBL file provided. Please provide nucleotide GBK/EMBL file.\n")
@@ -578,7 +577,7 @@ def gbk2proteins(gbkfile, nr=0, filetype="genbank_derived", frame=None, outbox=N
   rc_dnaseq = reverse_complement(dnaseq, frame, outbox, GUI)
   if dnaseqlength < 1:
       if GUI == "n":
-        print("No sequence found in GBK/EMBL file. Please provide an annotated nucleotide GBK/EMBL file with a DNA sequence.")
+        print "No sequence found in GBK/EMBL file. Please provide an annotated nucleotide GBK/EMBL file with a DNA sequence."
         sys.exit(1)
       else:
         outbox.text_insert("No sequence found in GBK/EMBL file. Please provide an annotated nucleotide GBK/EMBL file with a DNA sequence.\n")
@@ -613,7 +612,7 @@ def check_files(seqfiles, dbname, outbox=None, GUI="n"):
   if GUI == "y":
     outbox.text_insert("Checking files for suitability: " + ", ".join([seqfile.rpartition(os.sep)[2].rpartition("/")[2] for seqfile in seqfiles]) + "\n")
   else:
-    print("Checking files for suitability: " + ", ".join([seqfile.rpartition(os.sep)[2].rpartition("/")[2] for seqfile in seqfiles]))
+    print "Checking files for suitability: " + ", ".join([seqfile.rpartition(os.sep)[2].rpartition("/")[2] for seqfile in seqfiles])
   ##Check if files are present and check if they do not have the same accession numbers
   accessions = []
   for inputfilename in seqfiles:
@@ -623,7 +622,7 @@ def check_files(seqfiles, dbname, outbox=None, GUI="n"):
       if GUI == "y":
         outbox.text_insert("File " + inputfilename + " not found.\n")
       else:
-        print("File " + inputfilename + " not found.")
+        print "File " + inputfilename + " not found."
       clean_up(dbname)
       sys.exit(1)
     inputfile = open(inputfilename,"rU")
@@ -635,14 +634,14 @@ def check_files(seqfiles, dbname, outbox=None, GUI="n"):
           if GUI == "y":
             outbox.text_insert("Error: all GenBank entries should start with 'LOCUS' identifier and contain a sequence after 'ORIGIN'. Exiting.\n")
           else:
-            print("Error: all GenBank entries should start with 'LOCUS' identifier and contain a sequence after 'ORIGIN'. Exiting.")
+            print "Error: all GenBank entries should start with 'LOCUS' identifier and contain a sequence after 'ORIGIN'. Exiting."
           clean_up(dbname)
           sys.exit(1)
       entries = infiletext.split("LOCUS       ")[1:]
       entrynr = 0
       for i in entries:
         if "DEFINITION" not in i:
-            print("Warning: entry in " + inputfilename + " lacks GBK definition line; using file name instead.")
+            print "Warning: entry in " + inputfilename + " lacks GBK definition line; using file name instead."
             description = inputfilename.rpartition(os.sep)[2].replace(".","_") + "_" + str(entrynr)
         else:
             definitionlines = i.partition("DEFINITION  ")[2]
@@ -657,7 +656,7 @@ def check_files(seqfiles, dbname, outbox=None, GUI="n"):
           if GUI == "y":
             outbox.text_insert("Warning: entry in " + inputfilename + " lacks accession number; using file name instead.\n")
           else:
-            print("Warning: entry in " + inputfilename + " lacks accession number; using file name instead.")
+            print "Warning: entry in " + inputfilename + " lacks accession number; using file name instead."
           accession = inputfilename.rpartition(os.sep)[2].replace(".","_") + "_" + str(entrynr)
           accessions.append(accession)
         else:
@@ -669,7 +668,7 @@ def check_files(seqfiles, dbname, outbox=None, GUI="n"):
         if GUI == "y":
           outbox.text_insert("Error: all EMBL entries should start with 'ID' identifier and contain a sequence after 'SQ'. Exiting.\n")
         else:
-          print("Error: all EMBL entries should start with 'ID' identifier and contain a sequence after 'SQ'. Exiting.")
+          print "Error: all EMBL entries should start with 'ID' identifier and contain a sequence after 'SQ'. Exiting."
         clean_up(dbname)
         sys.exit(1)
       entries = infiletext.split("ID   ")[1:]
@@ -681,7 +680,7 @@ def check_files(seqfiles, dbname, outbox=None, GUI="n"):
           if GUI == "y":
             outbox.text_insert("Warning: entry in " + inputfilename + " lacks accession number; using file name and entry nr instead.\n")
           else:
-            print("Warning: entry in " + inputfilename + " lacks accession number; using file name and entry nr  instead.")
+            print "Warning: entry in " + inputfilename + " lacks accession number; using file name and entry nr  instead."
           accession = inputfilename.rpartition(os.sep)[2].replace(".","_") + "_" + str(entrynr)
           accessions.append(accession)
         else:
@@ -710,7 +709,7 @@ def parse_gbk_embl(args, dbname, frame=None, outbox=None, GUI="n"):
         frame.update()
         continue
       else:
-        print("  Incorporating " + seqfile + "\n")
+        print "  Incorporating " + seqfile + "\n"
     #Open seq file  
     infile = open(seqfile,"rU").read()
     if GUI == "y":
@@ -772,7 +771,7 @@ def parse_gbk_embl(args, dbname, frame=None, outbox=None, GUI="n"):
       frame.update()
       sys.exit(1)
     else:
-      print("ERROR: No CDS features found in these entries. Exiting.")
+      print "ERROR: No CDS features found in these entries. Exiting."
       clean_up(dbname)
       sys.exit(1)
   outputfile.close()
@@ -791,7 +790,7 @@ def checkfastafile(sequence, frame=None, outbox=None, GUI="n"):
             outbox.text_insert("Warning: protein FASTA file provided. Entry skipped.\n")
             frame.update()
         else:
-            print("Warning: protein FASTA file provided. Entry skipped.\n")
+            print "Warning: protein FASTA file provided. Entry skipped.\n"
         return False
     return True
 
@@ -812,7 +811,7 @@ def nucparse_gbk_embl_fasta(args, dbname, frame=None, outbox=None, GUI="n"):
         frame.update()
         continue
       else:
-        print("  Incorporating " + seqfile + "\n")
+        print "  Incorporating " + seqfile + "\n"
     #Open seq file  
     infile = open(seqfile,"r").read()
     if GUI == "y":
@@ -847,7 +846,7 @@ def nucparse_gbk_embl_fasta(args, dbname, frame=None, outbox=None, GUI="n"):
             entries.append(">" + entry)
     if len(entries) == 0:
       if GUI == "n":
-        print("Error: protein FASTA files given instead of nucleotide FASTA files. Exiting.")
+        print "Error: protein FASTA files given instead of nucleotide FASTA files. Exiting."
         clean_up(dbname)
         sys.exit(1)
       else:
@@ -867,7 +866,7 @@ def nucparse_gbk_embl_fasta(args, dbname, frame=None, outbox=None, GUI="n"):
         accession, sequence, description = get_sequence(entry, allnames, seqfile, entrynr, "fasta", dbname)
       if accession in allnames:
         if GUI == "n":
-          print("Error: multiple input files with same name / accession number:", accession)
+          print "Error: multiple input files with same name / accession number:", accession
           clean_up(dbname)
           sys.exit()
         else:
@@ -928,13 +927,13 @@ def fetch_entries_from_ncbi(efetch_url):
         try:
             nrtries += 1
             time.sleep(3)
-            req = urllib.request.Request(efetch_url)
-            response = urllib.request.urlopen(req)
+            req = urllib2.Request(efetch_url)
+            response = urllib2.urlopen(req)
             output = response.read()
             if len(output) > 5:
                 urltry = "y"
-        except (IOError,http.client.BadStatusLine,URLError,http.client.HTTPException):
-            print("Entry fetching from NCBI failed. Waiting for connection...")
+        except (IOError,httplib.BadStatusLine,URLError,httplib.HTTPException):
+            print "Entry fetching from NCBI failed. Waiting for connection..."
             time.sleep(5)
     return output
 
@@ -978,7 +977,7 @@ def fix_wgs_master_record(gbk, dbname, frame=None, outbox=None, GUI="n"):
                 nrzeros += 1
             else:
                 break
-        contigrange = [alpha_tag + nrzeros * "0" + str(number) for number in range(int(startnumber), int(endnumber))]
+        contigrange = [alpha_tag + nrzeros * "0" + str(number) for number in xrange(int(startnumber), int(endnumber))]
         allcontigs.extend(contigrange)
     #Create contig groups of 50 (reasonable download size per download)
     nr_groups = len(allcontigs) / 50 + 1
@@ -993,7 +992,7 @@ def fix_wgs_master_record(gbk, dbname, frame=None, outbox=None, GUI="n"):
             break
         if "Resource temporarily unavailable" in output[:200] or "<h1>Server Error</h1>" in output[:500] or "NCBI - WWW Error" in output[:500] or "LOCUS       " not in output[:500]:
             if GUI == "n":
-                print('ERROR: NCBI server temporarily unavailable: downloading contigs failed.')
+                print 'ERROR: NCBI server temporarily unavailable: downloading contigs failed.'
                 clean_up(dbname)
                 sys.exit(1)
             else:
@@ -1024,7 +1023,7 @@ def fix_supercontig_record(gbk, dbname, frame=None, outbox=None, GUI="n"):
             break
         if "Resource temporarily unavailable" in output[:200] or "<h1>Server Error</h1>" in output[:500]:
             if GUI == "n":
-                print('ERROR: NCBI server temporarily unavailable: downloading contigs failed.')
+                print 'ERROR: NCBI server temporarily unavailable: downloading contigs failed.'
                 clean_up(dbname)
                 sys.exit(1)
             else:
@@ -1046,7 +1045,7 @@ def fix_supercontig_record(gbk, dbname, frame=None, outbox=None, GUI="n"):
             if candidate_gap_int.isdigit():
                 fullsequence += int(candidate_gap_int) * 'N'
             else:
-                print('Parsing supercontig file failed: faulty gap identifier' + part)
+                print 'Parsing supercontig file failed: faulty gap identifier' + part
                 sys.exit(1)
         else:
             accession = part.partition(":")[0].partition(".")[0]
