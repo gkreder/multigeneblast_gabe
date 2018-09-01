@@ -1575,11 +1575,14 @@ def process_identifiers(identifiers, opts, options):
                   print("Not a valid output folder name. Please use alpha-numerical characters only")
                   invalidoptions(i)
               if sys.platform == ('win32') and value.count(os.sep) == 1 and value[0] == os.sep:
+                print('sys.platform error')
                 invalidoptions(i)
               opts.outputfolder = value
               if opts.outputfolder[0] == os.sep and ".." in opts.outputfolder:
+                print('os sep .. error')
                 invalidoptions(i)
               elif os.sep in value[0] and not os.path.exists(value.rpartition(os.sep)[0]):
+                print('output folder path doesn\'t exist')
                 invalidoptions(i)
               elif os.sep in opts.outputfolder and ".." in opts.outputfolder:
                 startdir = CURRENTDIR
@@ -1848,8 +1851,10 @@ def internal_blast(minseqcoverage, minpercidentity, names, proteins, seqdict, nr
   makeblastdbcommand = "makeblastdb -in query.fasta -out query.fasta -dbtype prot"
   new_env = os.environ.copy()
   makeblastdb_stdout = subprocess.Popen(makeblastdbcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=new_env)
-  makeblastdb_stdout = makeblastdb_stdout.stdout.read()
+  # Gabe 180831 - converting to string output to avoid error in .lower()
+  makeblastdb_stdout = makeblastdb_stdout.stdout.read().decode('ascii')
   z = 0
+  
   while "error" in makeblastdb_stdout.lower():
     log(makeblastdb_stdout)
     log("Error running BLAST. Retrying...")
@@ -1862,7 +1867,7 @@ def internal_blast(minseqcoverage, minpercidentity, names, proteins, seqdict, nr
   blastsearch = "blastp  -db query.fasta -query query.fasta -outfmt 6 -max_target_seqs 1000 -evalue 1e-05 -out internal_input.out -num_threads " + str(nrcpus)
   new_env = os.environ.copy()
   blast_stdout = subprocess.Popen(blastsearch, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=new_env)
-  blast_stdout = blast_stdout.stdout.read()
+  blast_stdout = blast_stdout.stdout.read().decode('ascii')
   z = 0
   while "error" in blast_stdout.lower():
     log(blast_stdout)
