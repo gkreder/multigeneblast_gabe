@@ -1926,10 +1926,13 @@ def runblast(args, dbtype):
   blast_stdout = subprocess.Popen(blastsearch, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=new_env)
   blast_stdout = blast_stdout.stdout.read()
   z = 0
-  while "error" in blast_stdout:
+  while "error" in blast_stdout.decode('ascii'):
     blast_stdout = subprocess.Popen(blastsearch, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=new_env)
     blast_stdout = blast_stdout.stdout.read()
     if z > 2:
+      print('\n\n')
+      print(blast_stdout.decode('ascii'))
+      print('\n\n')
       print("Error running Blast, exiting. Please check your system.")
       sys.exit(1)
     z += 1
