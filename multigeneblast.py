@@ -1465,6 +1465,7 @@ Options (x is an integer number)
 def default_options(opts):
     #Implement defaults
     opts.db = "genbank_mf"
+    opts.dbtype = "nucl" # Gabe 180831 - added for default genbank DB
     opts.cores = "all"
     opts.minseqcov = 25
     opts.minpercid = 30
