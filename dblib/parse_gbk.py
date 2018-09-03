@@ -11,7 +11,7 @@ from http.client import BadStatusLine,HTTPException
 import time
 
 def reverse_complement(sequence, frame=None, outbox=None, GUI="n"):
-    complement = string.maketrans('atcgn', 'tagcn')
+    complement = str.maketrans('atcgn', 'tagcn')
     return sequence.lower().translate(complement)[::-1]
 
 def parsegenes(genes, filetype="genbank_derived", frame=None, outbox=None, GUI="n", nr=0):
