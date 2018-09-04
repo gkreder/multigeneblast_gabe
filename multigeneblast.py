@@ -888,6 +888,8 @@ def blastparse(blasttext, minseqcoverage, minpercidentity, seqlengths, seqdict, 
           subjectlist.append(subject)
           querydict[subject] = [perc_ident,blastscore,perc_coverage,evalue,hit_start,hit_end]
     hitnr += 1
+  if len(querylist) == 1 and len(blastdict) == 0: #gkreder
+    blastdict[last_query] = [subjectlist,querydict] #gkreder
   return [blastdict,querylist]
 
 def generate_rgbscheme(nr):
@@ -2087,6 +2089,8 @@ def load_dbproteins_info(querylist, blastdict, dbname):
     if genome not in allgenomes:
       allgenomes.append(genome)
       temp_proteininfo[genome] = [j, ProteinInfo(genome,pstart,pend,strand,annotation,locustag)]
+      proteininfo[j] = ProteinInfo(genome,pstart,pend,strand,annotation,locustag) #gkreder
+      nucdict[j] = genome #gkreder
     else:
       if genome in temp_proteininfo:
         old_entry = temp_proteininfo[genome]
@@ -2286,6 +2290,8 @@ def sort_genes_per_nucleotide(querylist, blastdict, nucdict):
           multiplehitlist.append(j)
     else:
       source2dict[nucsource] = [j]
+      sourcedict[nucsource] = [j] #gkreder
+
   return sourcedict, multiplehitlist, universalquerydict
 
 def find_geneclusters(sourcedict, universalquerydict, allowedgenedistance, nucdescriptions, proteininfo, dnaseqlength):
@@ -2395,7 +2401,8 @@ def update_blastdict(blastdict, querylist, clusterdict, multiplehitlist):
       querydict2 = {}
       multiplehitlistsubjects = "n"
       for j in subjects:
-        if j in multiplehitlist:
+        # if j in multiplehitlist:
+        if (j in multiplehitlist) or (len(querylist) == 1): #gkreder
           multiplehitlistsubjects = "y"
           geneclustername = clusterdict[j]
           oldblastdictinfo = querydict[j][1:]
@@ -2438,7 +2445,10 @@ def score_blast(hitclusters, querylist, blastdict, clusters, multiplehitlist, ar
       nrhitsplus = "n"
       if j in blastdict:
         for k in blastdict[j][0]:
-          if k in multiplehitlist and i == blastdict[j][1][k][0]:
+          # print('\n\nGABE\n\n')
+          # print(len(querylist), i, blastdict[j][1][k][0], '\n\n')
+          # if k in multiplehitlist and i == blastdict[j][1][k][0]:
+          if (k in multiplehitlist and i == blastdict[j][1][k][0]) or (len(querylist) == 1 and i == blastdict[j][1][k][0]): #gkreder
             if [querylist.index(j),clusters[i][0].index(blastdict[j][1][k][11])] not in hitpositions:
               nrhitsplus = "y"
               querynrhits += 1
@@ -2503,7 +2513,7 @@ def write_txt_output(rankedclusters, rankedclustervalues, hitclusterdata, protei
     possible_pages += 1
   if possible_pages < int(pages):
     # pages = possible_pages
-    pages = math.ceil(possible_pages)
+    pages = math.ceil(possible_pages) #gkreder
   if pages == 0:
     pages = 1
   #Output for each hit: table of genes and locations of input cluster, table of genes and locations of hit cluster, table of hits between the clusters
@@ -2589,6 +2599,7 @@ def write_txt_output(rankedclusters, rankedclustervalues, hitclusterdata, protei
     value = str(rankedclustervalues[z])
     nrhits = value.split(".")[0]
     if float(nrhits) > 0:
+    # if float(nrhits) > 0 or (len(querytags) == 1 and float(nrhits) > -1): #gkreder, not sure about hrhits condition here or why it was >0 enforced in the first place
       out_file.write("\n\n")
       out_file.write(">>")
       out_file.write("\n")
@@ -2672,6 +2683,8 @@ def read_multigeneblast_data(page):
   clusterblastfile = clusterblastfile.replace("\r","\n")
   tophitclusters = []
   #Identify top 50 hits for visualization
+  # print('\n\nGABE2\n\n')
+  # print(clusterblastfile, '\n\n')
   hitlines = [i for i in ((clusterblastfile.split("Significant hits: \n")[1]).split("\nDetails:")[0]).split("\n") if i != ""]
   a = 0
   cb_accessiondict = {}
@@ -3291,8 +3304,8 @@ def main():
   for page in [pagenr + 1 for pagenr in range(opts.pages)]:
     #Step 9: Write MultiGeneBlast SVGs
     queryclusterdata, colorschemedict, clusterblastpositiondata, blastdetails, mgb_scores = write_svgs(page, opts.screenwidth, internalhomologygroupsdict, arch_search)
-    if queryclusterdata == None:
-      continue
+    if queryclusterdata == None: #gkreder
+      continue #gkreder
     print("Step 9/11, page " + str(page) + ": Time since start: " + str((time.time() - starttime)))
 
     #Step 10: Create muscle alignments
