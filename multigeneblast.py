@@ -15,6 +15,7 @@ from multiprocessing import Process, freeze_support
 import random
 import fileinput
 import subprocess
+import math
 
 global GUI
 global OUTBOX
@@ -1465,7 +1466,7 @@ Options (x is an integer number)
 def default_options(opts):
     #Implement defaults
     opts.db = "genbank_mf"
-    opts.dbtype = "nucl" # Gabe 180831 - added for default genbank DB
+    opts.dbtype = "nucl" # gkreder 180831 - added for default genbank DB
     opts.cores = "all"
     opts.minseqcov = 25
     opts.minpercid = 30
@@ -1710,7 +1711,7 @@ def process_identifiers(identifiers, opts, options):
 def parse_options(args, opts):
     #Run GUI if no arguments supplied
     if len(args) < 2:
-      args = ["gabe_extra_arg_180831", "-h"]
+      args = ["gkreder_extra_arg_180831", "-h"]
     default_options(opts)
     #Read user-specified options which may override defaults
     if len(args) >= 2:
@@ -1852,7 +1853,7 @@ def internal_blast(minseqcoverage, minpercidentity, names, proteins, seqdict, nr
   makeblastdbcommand = "makeblastdb -in query.fasta -out query.fasta -dbtype prot"
   new_env = os.environ.copy()
   makeblastdb_stdout = subprocess.Popen(makeblastdbcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=new_env)
-  # Gabe 180831 - converting to string output to avoid error in .lower()
+  # gkreder 180831 - converting to string output to avoid error in .lower()
   makeblastdb_stdout = makeblastdb_stdout.stdout.read().decode('ascii')
   z = 0
   
@@ -2501,7 +2502,8 @@ def write_txt_output(rankedclusters, rankedclustervalues, hitclusterdata, protei
   if len(rankedclusters) % 50 > 1:
     possible_pages += 1
   if possible_pages < int(pages):
-    pages = possible_pages
+    # pages = possible_pages
+    pages = math.ceil(possible_pages)
   if pages == 0:
     pages = 1
   #Output for each hit: table of genes and locations of input cluster, table of genes and locations of hit cluster, table of hits between the clusters
@@ -2586,7 +2588,7 @@ def write_txt_output(rankedclusters, rankedclustervalues, hitclusterdata, protei
     frame_update()
     value = str(rankedclustervalues[z])
     nrhits = value.split(".")[0]
-    if nrhits > 0:
+    if float(nrhits) > 0:
       out_file.write("\n\n")
       out_file.write(">>")
       out_file.write("\n")
@@ -2862,6 +2864,8 @@ def write_svgs(page, screenwidth, internalhomologygroupsdict, arch_search):
   #Read in MultiGeneBlast output data
   queryclusterdata, nrhitgeneclusters, nrhitclusters, cb_accessiondict, queryclustergenes, queryclustergenesdetails, tophitclusters, details = read_multigeneblast_data(page)
   hitclusterdata, nrhitclusters, blastdetails, mgb_scores = process_multigeneblast_data(nrhitgeneclusters, nrhitclusters, cb_accessiondict, queryclustergenes, queryclustergenesdetails, internalhomologygroupsdict, tophitclusters, details, page)
+  if len(hitclusterdata) == 0: #gkreder
+    return None, None, None, None, None #gkreder - 180904
   clusterblastpositiondata, colorschemedict = write_svg_files(queryclusterdata, hitclusterdata, nrhitclusters, internalhomologygroupsdict, svgfolder, page, screenwidth, arch_search)
   return queryclusterdata, colorschemedict, clusterblastpositiondata, blastdetails, mgb_scores
 
@@ -3285,9 +3289,10 @@ def main():
   print("Step 8/11: Time since start: " + str((time.time() - starttime)))
   #Output. From here, iterate for every page
   for page in [pagenr + 1 for pagenr in range(opts.pages)]:
-
     #Step 9: Write MultiGeneBlast SVGs
     queryclusterdata, colorschemedict, clusterblastpositiondata, blastdetails, mgb_scores = write_svgs(page, opts.screenwidth, internalhomologygroupsdict, arch_search)
+    if queryclusterdata == None:
+      continue
     print("Step 9/11, page " + str(page) + ": Time since start: " + str((time.time() - starttime)))
 
     #Step 10: Create muscle alignments
