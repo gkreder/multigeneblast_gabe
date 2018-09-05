@@ -1,0 +1,12 @@
+NZ_DS499570	Alistipes putredinis DSM 17216 Scfld_02_0, whole genome shotgun sequence.
+NZ_DS499571	Alistipes putredinis DSM 17216 Scfld_02_1, whole genome shotgun sequence.
+NZ_DS499572	Alistipes putredinis DSM 17216 Scfld_02_2, whole genome shotgun sequence.
+NZ_DS499573	Alistipes putredinis DSM 17216 Scfld_02_3, whole genome shotgun sequence.
+NZ_DS499574	Alistipes putredinis DSM 17216 Scfld_02_4, whole genome shotgun sequence.
+NZ_DS499575	Alistipes putredinis DSM 17216 Scfld_02_5, whole genome shotgun sequence.
+NZ_DS499576	Alistipes putredinis DSM 17216 Scfld_02_6, whole genome shotgun sequence.
+NZ_DS499577	Alistipes putredinis DSM 17216 Scfld_02_7, whole genome shotgun sequence.
+NZ_DS499578	Alistipes putredinis DSM 17216 Scfld_02_8, whole genome shotgun sequence.
+NZ_DS499579	Alistipes putredinis DSM 17216 Scfld_02_9, whole genome shotgun sequence.
+NZ_DS499580	Alistipes putredinis DSM 17216 Scfld_02_10, whole genome shotgun sequence.
+NZ_DS499581	Alistipes putredinis DSM 17216 Scfld_02_11, whole genome shotgun sequence.

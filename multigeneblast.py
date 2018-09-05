@@ -1552,7 +1552,7 @@ def process_identifiers(identifiers, opts, options):
               if fromto_tag_used == "y":
                 print("Please either the -from and -to tags, or the -genes tag to select genes.")
                 invalidoptions(i)
-              if "," in value:
+              if ("," in value) or (len(value.split(',')) == 1):
                   opts.ingenes = [gene for gene in value.split(",") if gene != ""]
                   ingenes = "y"
               else:
@@ -2445,8 +2445,6 @@ def score_blast(hitclusters, querylist, blastdict, clusters, multiplehitlist, ar
       nrhitsplus = "n"
       if j in blastdict:
         for k in blastdict[j][0]:
-          # print('\n\nGABE\n\n')
-          # print(len(querylist), i, blastdict[j][1][k][0], '\n\n')
           # if k in multiplehitlist and i == blastdict[j][1][k][0]:
           if (k in multiplehitlist and i == blastdict[j][1][k][0]) or (len(querylist) == 1 and i == blastdict[j][1][k][0]): #gkreder
             if [querylist.index(j),clusters[i][0].index(blastdict[j][1][k][11])] not in hitpositions:
