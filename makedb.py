@@ -74,7 +74,7 @@ def parse_options(args):
           for filename in os.listdir("."):
             root, fext = os.path.splitext(filename)
             if fext.lower() in [".gbk",".gb",".genbank",".embl",".emb"]:
-              inputfiles.append(arg.rpartition(os.sep)[2] + os.sep + filename)
+              inputfiles.append(arg.rpartition(os.sep)[0] + os.sep + filename)
               filesfound = "y"
           if filesfound == "n":
             print("Error: no GBK/EMBL files found in folder", arg)
@@ -89,12 +89,12 @@ def parse_options(args):
         print("Error: specified input file", arg , "not found.")
         sys.exit(1)
 
-
   return inputfiles, dbname
 
 def main():
   global GUI
   GUI = "n"
+  top_dir = os.getcwd()
   args = sys.argv
   if "makedb" in args[0]:
     args = args[1:]
@@ -125,14 +125,14 @@ def main():
   #Create Blast database and TAR archives
   if "\n" not in open(dbname + "_dbbuild.fasta","r").read():
     print("Error making BLAST database; no suitable sequences found in input.")
-    clean_up(dbname)
+    clean_up(dbname, top_dir)
     sys.exit()
   make_blast_db(dbname, dbname + "_dbbuild.fasta")
   generate_genecords_tar(dbname)
   generate_proteininfo_tar(dbname)
   
   #Clean up
-  clean_up(dbname)
+  clean_up(dbname, top_dir)
 
 if __name__ == "__main__":
   main()
