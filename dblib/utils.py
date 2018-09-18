@@ -197,7 +197,7 @@ def clean_up(dbname, top_dir, frame=None, outbox=None, GUI="n", exit=False, dbty
   # gkreder - check top_dir for existence of old_db and move to top_dir
   if GUI == 'n':
     temp_tags = ["_con.fasta", "_seq.fasta", "_wgs.fasta", "_all.fasta", "_all.txt", "_descrs.txt", "_wgs_descrs.txt", "_con_descrs.txt", "_dbbuild.fasta"]
-    final_tags = [".cords.tar", ".phr", ".pal", ".pin", ".psq", "_all.txt", "_all_descrs.txt"]
+    final_tags = [".cords.tar", ".phr", ".pal", ".pin", ".psq", "_all.txt", "_all_descrs.txt", ".pinfo.tar"]
     for t in temp_tags + final_tags:
       fname_temp = dbname + t
       if fname_temp in os.listdir(os.getcwd()):

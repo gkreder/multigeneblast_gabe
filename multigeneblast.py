@@ -1053,6 +1053,8 @@ def calculate_colorgroups(queryclusternumber,hitclusternumbers,queryclusterdata,
   colorgroupslengthlist = []
   colorgroupslist = []
   for hitclusternumber in hitclusternumbers:
+    if hitclusternumber > max(hitclusterdata.keys()): #gkreder
+      break
     colorgroups = hitclusterdata[hitclusternumber][0][hitclusternumber]
     colorgroupsdict[hitclusternumber] = colorgroups
     colorgroupslengthlist.append(len(colorgroups))
@@ -1105,6 +1107,8 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
   colorgroupslengthlist = []
   colorgroupslist = []
   for hitclusternumber in hitclusternumbers:
+    if (hitclusternumber > max(hitclusterdata.keys())): #gkreder
+      break
     colorgroups = hitclusterdata[hitclusternumber][0][hitclusternumber]
     colorgroupsdict[hitclusternumber] = colorgroups
     colorgroupslengthlist.append(len(colorgroups))
@@ -1112,6 +1116,8 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
   #Find out whether hit gene cluster needs to be inverted compared to query gene cluster
   strandsbalancedict = {}
   for m in hitclusternumbers:
+    if (m > max(hitclusterdata.keys())): #gkreder
+      break
     hitclustergenesdetails = hitclusterdata[m][2]
     strandsbalance = 0
     for i in queryclustergenes:
@@ -1148,6 +1154,8 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
   qends = qstarts_ends[1]
   hdata = {}
   for m in hitclusternumbers:
+    if (m > max(hitclusterdata.keys())): #gkreder
+      break
     hitclustergenes = hitclusterdata[m][1]
     hitclustergenesdetails = hitclusterdata[m][2]
     hnrgenes = len(hitclustergenes)
@@ -1238,6 +1246,8 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
   #Find largest hit cluster
   approxclustersizes = []
   for m in hitclusternumbers:
+    if (m > max(hitclusterdata.keys())): #gkreder
+      break
     hstarts,hends,hstrands,hcolors = hdata[m]
     x = 0
     first = -1
@@ -1256,6 +1266,8 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
   hdata2 = {}
   savedpositions = {}
   for m in hitclusternumbers:
+    if (m > max(hitclusterdata.keys())): #gkreder
+      break
     hstarts,hends,hstrands,hcolors = hdata[m]
     x = 0
     first = -1
@@ -1302,6 +1314,8 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
   #Find cluster size of largest cluster of query & all hit clusters assessed
   clustersizes = []
   for m in hitclusternumbers:
+    if (m > max(hitclusterdata.keys())): #gkreder
+      break
     pstarts = [int(n) for n in hdata[m][1]]
     pends = [int(n) for n in hdata[m][0]]
     locations = pstarts + pends
@@ -1320,6 +1334,8 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
   qdata2 = []
   q_adjusted = False
   for m in hitclusternumbers:
+    if (m > max(hitclusterdata.keys())): #gkreder
+      break
     hclustersize = int(hdata[m][1][-1]) - int(hdata[m][0][0])
     hrelpositions = relativepositions(hdata[m][0],hdata[m][1],largestclustersize, screenwidth)
     hrel_starts = hrelpositions[0]
@@ -1382,6 +1398,8 @@ def clusterblastresults(queryclusternumber,hitclusternumbers,queryclusterdata,co
       y = 0
     a += 1
   for m in hitclusternumbers:
+    if (m > max(hitclusterdata.keys())): #gkreder
+      break
     group = g()
     group.addElement(oh.createLine(10,35 + 50 * (hitclusternumbers.index(m) + 1),10 + (screenwidth * 0.75),35 + 50 * (hitclusternumbers.index(m) + 1), strokewidth = 1, stroke = "grey"))
     s.addElement(group)
@@ -1575,8 +1593,9 @@ def process_identifiers(identifiers, opts, options):
                   print("Specified input file not found...")
                   invalidoptions(i)
           elif i == "-out":
-              if not value.replace("_","").replace("_","").replace("..","").replace(os.sep,"").isalnum():
+              if not value.replace("_","").replace("_","").replace("..","").replace('-', '').replace(os.sep,"").isalnum(): #gkreder
                   print("Not a valid output folder name. Please use alpha-numerical characters only")
+                  print('\n', value, '\n') #gkreder
                   invalidoptions(i)
               if sys.platform == ('win32') and value.count(os.sep) == 1 and value[0] == os.sep:
                 print('sys.platform error')
@@ -1628,13 +1647,14 @@ def process_identifiers(identifiers, opts, options):
                 value = CURRENTDIR + os.sep + value
               elif os.sep not in value or value[0] != os.sep:
                 value = CURRENTDIR + os.sep + value
+
               if not value + ".pal" in os.listdir(MGBPATH) and not value + ".pal" in os.listdir(".") and not value + ".pal" in os.listdir(CURRENTDIR) and not (os.sep in value and os.path.exists(value.rpartition(os.sep)[0]) and value.rpartition(os.sep)[2] + ".pal" in os.listdir(value.rpartition(os.sep)[0])):
                 if not value + ".phr" in os.listdir(MGBPATH) and not value + ".phr" in os.listdir(".") and not (os.sep in value and os.path.exists(value.rpartition(os.sep)[0]) and value.rpartition(os.sep)[2] + ".phr" in os.listdir(value.rpartition(os.sep)[0])):
                   if not value + ".nal" in os.listdir(MGBPATH) and not value + ".nal" in os.listdir(".") and not value + ".nal" in os.listdir(CURRENTDIR) and not (os.sep in value and os.path.exists(value.rpartition(os.sep)[0]) and value.rpartition(os.sep)[2] + ".nal" in os.listdir(value.rpartition(os.sep)[0])):
                     if not value + ".nhr" in os.listdir(MGBPATH) and not value + ".nhr" in os.listdir(".") and not (os.sep in value and os.path.exists(value.rpartition(os.sep)[0]) and value.rpartition(os.sep)[2] + ".nhr" in os.listdir(value.rpartition(os.sep)[0])):
                       print("Error: Database not found; database should have accompanying .phr, .psq and .pin files.")
                       invalidoptions(i)
-              opts.db = value
+              opts.db = os.path.abspath(value)
               if value + ".pal" in os.listdir(MGBPATH) or value + ".nal" in os.listdir(MGBPATH):
                 DBPATH = MGBPATH
               elif value + ".pal" in os.listdir(CURRENTDIR) or value + ".nal" in os.listdir(CURRENTDIR):
@@ -2681,8 +2701,6 @@ def read_multigeneblast_data(page):
   clusterblastfile = clusterblastfile.replace("\r","\n")
   tophitclusters = []
   #Identify top 50 hits for visualization
-  # print('\n\nGABE2\n\n')
-  # print(clusterblastfile, '\n\n')
   hitlines = [i for i in ((clusterblastfile.split("Significant hits: \n")[1]).split("\nDetails:")[0]).split("\n") if i != ""]
   a = 0
   cb_accessiondict = {}
@@ -2982,6 +3000,8 @@ def write_xhtml_output(htmloutfile, queryclusterdata, clusters, clusterblastposi
   htmloutfile.write('<div id="qcluster' + str(qclusternr) + '">\n<br/><br/>\n<div align="left">\n<form name="clusterform' + str(qclusternr) + '">\n<select name="selection' + str(qclusternr) + '" onchange="javascript:navigate(this);">\n')
   htmloutfile.write('<option value="">Select gene cluster alignment</option>\n')
   for i in range(nrhitclusters):
+    if ((i + 1 + (page - 1) * 50) > max(hitclusterdata.keys())): #gkreder
+      break
     cdescription = hitclusterdata[i + 1 + (page - 1) * 50][5][i].replace("&","&amp;")
     if len(cdescription) > 80:
       cdescription = cdescription[:77] + "..."
@@ -2989,6 +3009,8 @@ def write_xhtml_output(htmloutfile, queryclusterdata, clusters, clusterblastposi
   htmloutfile.write('</select>\n</form>\n\n</div>')
   htmloutfile.write('<div style="position:absolute; top:33px; left:' + str(screenwidth*0.625) + 'px;"><img src="images/button.gif" name="button' + str(qclusternr) + '" onclick="javascript:displaybutton(' + str(qclusternr) + ');"/></div>')
   for i in range(nrhitclusters):
+    if ((i + 1 + (page - 1) * 50) > max(hitclusterdata.keys())): #gkreder
+      break
     frame_update()
     hitclusterdata = queryclusterdata[1][1]
     queryclustergenes = hitclusterdata[list(hitclusterdata.keys())[0]][3]
@@ -3101,6 +3123,8 @@ def write_xhtml_output(htmloutfile, queryclusterdata, clusters, clusterblastposi
       qdescription = "Query: " + nucname[0:87] + "..."
     htmloutfile.write('<div id="descriptionquery" style="text-align:left; position:absolute; top:60px; left:10px; font-size:10px; font-style:italic">' + qdescription + '</div>\n')
     for i in range(nrhitclusters):
+      if ((i + 1 + (page - 1) * 50) > max(hitclusterdata.keys())): #gkreder
+        break
       frame_update()
       hitclusterdata = queryclusterdata[1][1]
       queryclustergenes = hitclusterdata[list(hitclusterdata.keys())[0]][3]

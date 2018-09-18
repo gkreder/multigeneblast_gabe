@@ -44,7 +44,7 @@ def parse_options(args):
     """)
     sys.exit(1)
   dbname = args[0]
-  overwrite = ""
+  overwrite = "y" #gkreder - hardcoded overwrite to 'yes'
   if dbname + ".nal" in os.listdir(".") or dbname + ".pal" in os.listdir("."):
     while overwrite != "y" and overwrite != "n":
       overwrite = input("Database with name exists in this folder. Overwrite? (y/n)")
@@ -99,6 +99,7 @@ def main():
   if "makedb" in args[0]:
     args = args[1:]
   inputfiles, dbname = parse_options(args)
+  inputfiles = [os.path.abspath(os.path.join(top_dir, x)) for x in inputfiles] #gkreder
   logfile = open("makedb.log","w")
 
   #Create FASTA database
