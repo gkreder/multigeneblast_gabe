@@ -92,9 +92,7 @@ else:
     TEMP = APPDATA
 #Set other environment variables
 os.environ['EXEC'] = MGBPATH + os.sep + "exec"
-# gkreder 180925 - dont include exec folder in path - rely on pre-installed
-# binaries e.g. blast, muscle, etc...
-# os.environ['PATH'] = os.environ['EXEC'] + os.pathsep + os.environ['PATH']
+os.environ['PATH'] = os.environ['EXEC'] + os.pathsep + os.environ['PATH']
 
 from pysvg.filter import *
 from pysvg.gradient import *
@@ -1874,11 +1872,15 @@ def internal_blast(minseqcoverage, minpercidentity, names, proteins, seqdict, nr
   internalhomologygroupsdict = {}
   clusternumber = 1
   #Make Blast db for internal search
-  makeblastdbcommand = "makeblastdb -in query.fasta -out query.fasta -dbtype prot"
+  makeblastdbcommand = "makeblastdb -in \"query.fasta\" -out \"query.fasta\" -dbtype \"prot\""
+  # # GABE
+  print('\n\nGABE\n\n', makeblastdbcommand, '\n' ,os.getcwd(), '\n\n')
+  # sys.exit()
 
   new_env = os.environ.copy()
   makeblastdb_stdout = subprocess.Popen(makeblastdbcommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=new_env)
   # gkreder 180831 - converting to string output to avoid error in .lower()
+  print('\nGabe2\n', makeblastdb_stdout.stdout.read(), '\n')
   # gkreder 180924 - changing from ascii to run on cluster
   makeblastdb_stdout = makeblastdb_stdout.stdout.read().decode('utf-8')
   z = 0
@@ -1895,8 +1897,8 @@ def internal_blast(minseqcoverage, minpercidentity, names, proteins, seqdict, nr
   blastsearch = "blastp  -db query.fasta -query query.fasta -outfmt 6 -max_target_seqs 1000 -evalue 1e-05 -out internal_input.out -num_threads " + str(nrcpus)
   new_env = os.environ.copy()
   blast_stdout = subprocess.Popen(blastsearch, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=new_env)
-  blast_stdout = blast_stdout.stdout.read().decode('utf-8')
-
+  blast_stdout = blast_stdout.stdout.read().decode('ascii')
+  # GABE
   z = 0
   while "error" in blast_stdout.lower():
     log(blast_stdout)
