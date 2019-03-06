@@ -74,7 +74,8 @@ def parse_options(args):
           for filename in os.listdir("."):
             root, fext = os.path.splitext(filename)
             if fext.lower() in [".gbk",".gb",".genbank",".embl",".emb"]:
-              inputfiles.append(arg.rpartition(os.sep)[0] + os.sep + filename)
+              # inputfiles.append(arg.rpartition(os.sep)[0] + os.sep + filename)
+              inputfiles.append(os.path.join(arg, filename)) #gkreder - this top line wasn't working...
               filesfound = "y"
           if filesfound == "n":
             print("Error: no GBK/EMBL files found in folder", arg)
@@ -88,6 +89,7 @@ def parse_options(args):
     else:
         print("Error: specified input file", arg , "not found.")
         sys.exit(1)
+
 
   return inputfiles, dbname
 
